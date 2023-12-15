@@ -1,10 +1,11 @@
-import React, {useMemo, useRef, useState} from 'react';
+import React, {useMemo, useRef, useState, useEffect} from 'react';
 import {
   Platform,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
+  NativeModules,
 } from 'react-native';
 import RNFS from 'react-native-fs';
 import Video, {DRMType} from 'react-native-video';
@@ -37,19 +38,29 @@ export default function App() {
   const percentage = useMemo(() => {
     return parseInt(((l - len) / (l * 0.01)) * 1000);
   }, [len, l]);
-
+  const [ifAssetExists, setIfAssetExists] = useState(false);
+  useEffect(() => {
+    let a = async () => {
+      let videocache = RNFS.ExternalCachesDirectoryPath.replace(
+        'cache',
+        `files/${asset_id}`,
+      );
+      setIfAssetExists(await RNFS.exists(videocache));
+    };
+    a();
+  }, [percentage > 100, percentage == 0]);
   const source = useMemo(
     () => ({
-      uri:
-        len == -2 && false
-          ? mpd_url
-          : `${RNFS.ExternalCachesDirectoryPath.replace(
-              'cache',
-              `files/${asset_id}`,
-            )}/manifest.mpd`, // Platform.OS == 'ios' ? m3u8_url : mpd_url,
-      type: 'mpd', //Platform.OS == 'ios' ? 'm3u8' : 'mpd',
+      uri: !ifAssetExists
+        ? ( Platform.OS == 'ios' ? m3u8_url :mpd_url)
+        : `${RNFS.ExternalCachesDirectoryPath.replace(
+            'cache',
+            `files/${asset_id}`,
+          )}/manifest.mpd`,
+      // Platform.OS == 'ios' ? m3u8_url : mpd_url,
+      type: Platform.OS == 'ios' ? 'm3u8' : 'mpd',
     }),
-    [len],
+    [percentage == 0, percentage > 100],
   );
 
   const download = () => {
@@ -63,6 +74,12 @@ export default function App() {
         _download(result);
       })
       .catch(error => console.log('error', error));
+  };
+  const downloadDRM = () => {
+    NativeModules.VideoDecoderProperties.downloadDRM(
+      mpd_url,
+      drm?.licenseServer,
+    ).then(key => console.log({key}));
   };
   const _download = async manifest => {
     try {
@@ -188,11 +205,21 @@ export default function App() {
           style={styles.backgroundVideo}
           onLoad={onLoad}
           controls
+          keySetId={'ksid17DCAD04'}
         />
         <TouchableOpacity onPress={download} style={styles.btn}>
           <Text>
-            {len == 0 ? 'Downloaded' : len < 0 ? 'Download' : 'Downloading'}
+            {ifAssetExists
+              ? 'Downloaded'
+              : len == 0
+              ? 'Downloaded'
+              : len < 0
+              ? 'Download'
+              : 'Downloading'}
           </Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={downloadDRM} style={styles.btn}>
+          <Text>Download drm</Text>
         </TouchableOpacity>
       </>
     </SafeAreaView>

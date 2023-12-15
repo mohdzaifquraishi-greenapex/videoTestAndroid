@@ -3,8 +3,9 @@ import { DRMType } from "react-native-video";
 
 const m3u8_url: string =
   'https://vodemedia-usea.streaming.media.azure.net/a1fb4b1b-ca13-430e-85a6-f02e5da25546/fish_-_16166_(540p).ism/manifest(format=m3u8-cmaf,encryption=cbcs-aapl)';
-  const mpd_url: string =
-  'https://vodemedia-usea.streaming.media.azure.net/dd5d9689-b7d9-4efe-9d7f-4f53162ad1b3/Charisma_1.ism/manifest(format=mpd-time-csf,encryption=cenc)';
+const mpd_url: string =
+  'https://vodemedia-usea.streaming.media.azure.net/c4312929-fafb-4317-b529-9c5708d6bc88/Teddy.ism/manifest(format=mpd-time-csf,encryption=cenc)';
+  // 'https://vodemedia-usea.streaming.media.azure.net/dd5d9689-b7d9-4efe-9d7f-4f53162ad1b3/Charisma_1.ism/manifest(format=mpd-time-csf,encryption=cenc)';
 const assetID = '1bfbe38a-7657-44fb-acd2-2c28a37c6116';
 const getLicenseUrl = () =>
   `https://fps.ezdrm.com/api/licenses/auth?pX=C56D7C&assetID=${assetID}`;

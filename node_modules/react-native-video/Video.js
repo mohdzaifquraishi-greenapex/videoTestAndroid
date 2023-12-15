@@ -343,7 +343,8 @@ export default class Video extends Component {
         patchVer: source.patchVer || 0,
         requestHeaders: source.headers ? this.stringsOnlyObject(source.headers) : {},
         startTime: source.startTime || 0,
-        endTime: source.endTime
+        endTime: source.endTime,
+        keySetId: this.props.keySetId || ""
       },
       onVideoLoadStart: this._onLoadStart,
       onVideoPlaybackStateChanged: this._onPlaybackStateChanged,

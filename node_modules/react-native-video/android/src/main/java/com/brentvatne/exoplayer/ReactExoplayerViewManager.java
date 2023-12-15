@@ -6,7 +6,7 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import com.brentvatne.common.DemoUtil;
-import com.brentvatne.common.DownloadTracker;
+//import com.brentvatne.common.DownloadTracker;
 import com.facebook.react.bridge.Dynamic;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
@@ -91,6 +91,7 @@ public class ReactExoplayerViewManager extends ViewGroupManager<ReactExoplayerVi
     private static final String PROP_CONTROLS = "controls";
     private static final String PROP_SUBTITLE_STYLE = "subtitleStyle";
     private static final String PROP_SHUTTER_COLOR = "shutterColor";
+    private static final String PROP_SRC_KEY_SET_ID = "keySetId";
 
     private ReactExoplayerConfig config;
 
@@ -161,6 +162,8 @@ public class ReactExoplayerViewManager extends ViewGroupManager<ReactExoplayerVi
     public void setSrc(final ReactExoplayerView videoView, @Nullable ReadableMap src) {
         Context context = videoView.getContext().getApplicationContext();
         String uriString = src.hasKey(PROP_SRC_URI) ? src.getString(PROP_SRC_URI) : null;
+        String keySetId = src.hasKey(PROP_SRC_KEY_SET_ID) ? src.getString(PROP_SRC_KEY_SET_ID) : null;
+
         int startTimeMs = src.hasKey(PROP_SRC_START_TIME) ? src.getInt(PROP_SRC_START_TIME) : -1;
         int endTimeMs = src.hasKey(PROP_SRC_END_TIME) ? src.getInt(PROP_SRC_END_TIME) : -1;
         String extension = src.hasKey(PROP_SRC_TYPE) ? src.getString(PROP_SRC_TYPE) : null;
@@ -175,7 +178,7 @@ public class ReactExoplayerViewManager extends ViewGroupManager<ReactExoplayerVi
             Uri srcUri = Uri.parse(uriString);
 
             if (srcUri != null) {
-                videoView.setSrc(srcUri, startTimeMs, endTimeMs, extension, headers);
+                videoView.setSrc(srcUri, startTimeMs, endTimeMs, extension, headers, keySetId);
             }
         } else {
             int identifier = context.getResources().getIdentifier(

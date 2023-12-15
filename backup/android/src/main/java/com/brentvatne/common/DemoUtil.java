@@ -68,7 +68,7 @@ public final class DemoUtil {
   private static @MonotonicNonNull File downloadDirectory;
   private static @MonotonicNonNull Cache downloadCache;
   private static @MonotonicNonNull DownloadManager downloadManager;
-  private static @MonotonicNonNull DownloadTracker downloadTracker;
+//  private static @MonotonicNonNull DownloadTracker downloadTracker;
   private static @MonotonicNonNull DownloadNotificationHelper downloadNotificationHelper;
 
   /** Returns whether extension renderers should be used. */
@@ -130,15 +130,15 @@ public final class DemoUtil {
     return downloadNotificationHelper;
   }
 
-  public static synchronized DownloadManager getDownloadManager(Context context) {
-    ensureDownloadManagerInitialized(context);
-    return downloadManager;
-  }
+//  public static synchronized DownloadManager getDownloadManager(Context context) {
+//    ensureDownloadManagerInitialized(context);
+//    return downloadManager;
+//  }
 
-  public static synchronized DownloadTracker getDownloadTracker(Context context) {
-    ensureDownloadManagerInitialized(context);
-    return downloadTracker;
-  }
+//  public static synchronized DownloadTracker getDownloadTracker(Context context) {
+//    ensureDownloadManagerInitialized(context);
+//    return downloadTracker;
+//  }
 
   private static synchronized Cache getDownloadCache(Context context) {
     if (downloadCache == null) {
@@ -151,19 +151,19 @@ public final class DemoUtil {
     return downloadCache;
   }
 
-  private static synchronized void ensureDownloadManagerInitialized(Context context) {
-    if (downloadManager == null) {
-      downloadManager =
-          new DownloadManager(
-              context,
-              getDatabaseProvider(context),
-              getDownloadCache(context),
-              getHttpDataSourceFactory(context),
-              Executors.newFixedThreadPool(/* nThreads= */ 6));
-      downloadTracker =
-          new DownloadTracker(context, getHttpDataSourceFactory(context), downloadManager);
-    }
-  }
+//  private static synchronized void ensureDownloadManagerInitialized(Context context) {
+//    if (downloadManager == null) {
+//      downloadManager =
+//          new DownloadManager(
+//              context,
+//              getDatabaseProvider(context),
+//              getDownloadCache(context),
+//              getHttpDataSourceFactory(context),
+//              Executors.newFixedThreadPool(/* nThreads= */ 6));
+//      downloadTracker =
+//          new DownloadTracker(context, getHttpDataSourceFactory(context), downloadManager);
+//    }
+//  }
 
   private static synchronized DatabaseProvider getDatabaseProvider(Context context) {
     if (databaseProvider == null) {

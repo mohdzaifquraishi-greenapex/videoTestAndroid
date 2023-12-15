@@ -7,17 +7,29 @@ import android.media.MediaFormat;
 import android.media.UnsupportedSchemeException;
 import android.net.Uri;
 import android.os.Build;
+import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
+import com.brentvatne.common.DemoUtil;
 import com.brentvatne.exoplayer.DefaultReactExoplayerConfig;
+import com.brentvatne.exoplayer.ReactExoplayerView;
 import com.brentvatne.exoplayer.ReactExoplayerViewManager;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.google.android.exoplayer2.Format;
+import com.google.android.exoplayer2.RenderersFactory;
+import com.google.android.exoplayer2.drm.DrmSessionEventListener;
+import com.google.android.exoplayer2.drm.OfflineLicenseHelper;
+import com.google.android.exoplayer2.source.dash.DashUtil;
+import com.google.android.exoplayer2.source.dash.manifest.DashManifest;
+import com.google.android.exoplayer2.upstream.DataSource;
 
+import java.io.IOException;
 import java.util.UUID;
 
 @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -107,14 +119,28 @@ public class VideoDecoderPropertiesModule extends ReactContextBaseJavaModule {
         this.reactContext = reactContext;
     }
 
+        public static String arrayToStringConversion(byte[] inputArray) {
+            StringBuilder output = new StringBuilder();
+            for (int value : inputArray) {
+                output.append((char) value);
+            }
+            return output.toString();
+        }
     @ReactMethod
-    public void downloadDRM(String manifestUrl, String licenceUrl, Promise p) {
-//        DefaultReactExoplayerConfig config = new DefaultReactExoplayerConfig(reactContext);
-//        ReactExoplayerViewManager obj = new ReactExoplayerViewManager(config);
-//       String key = obj.getDRM(manifestUrl, licenceUrl);
-
-        p.resolve("");
+    public void downloadDRM(String manifestUrl, String licenceUrl, Promise p) throws IOException {
+        DataSource.Factory datasourceFactory = DemoUtil.getDataSourceFactory(reactContext);
+        DataSource dataSource = datasourceFactory.createDataSource();
+        DashManifest dashManifest =
+                DashUtil.loadManifest(dataSource, Uri.parse(manifestUrl));
+        Format format = DashUtil.loadFormatWithDrmInitData(dataSource, dashManifest.getPeriod(0));
+        OfflineLicenseHelper offlineLicenseHelper =
+                OfflineLicenseHelper.newWidevineInstance(
+                        licenceUrl,
+                        true,
+                        datasourceFactory,
+                        null,
+                        new DrmSessionEventListener.EventDispatcher());
+        byte[] keySetId = offlineLicenseHelper.downloadLicense(format);
+        p.resolve( arrayToStringConversion(keySetId));
     }
-
-
 }

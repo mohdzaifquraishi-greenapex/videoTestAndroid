@@ -11,6 +11,7 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.media.AudioManager;
+import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Handler;
@@ -24,6 +25,7 @@ import android.view.accessibility.CaptioningManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 import androidx.activity.OnBackPressedCallback;
 
@@ -62,6 +64,7 @@ import com.google.android.exoplayer2.drm.UnsupportedDrmException;
 import com.google.android.exoplayer2.mediacodec.MediaCodecInfo;
 import com.google.android.exoplayer2.mediacodec.MediaCodecUtil;
 import com.google.android.exoplayer2.metadata.Metadata;
+import com.google.android.exoplayer2.offline.StreamKey;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.MergingMediaSource;
 import com.google.android.exoplayer2.source.ProgressiveMediaSource;
@@ -106,6 +109,7 @@ import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -119,6 +123,7 @@ import java.util.concurrent.TimeUnit;
 import java.lang.Integer;
 
 @SuppressLint("ViewConstructor")
+public
 class ReactExoplayerView extends FrameLayout implements
         LifecycleEventListener,
         Player.Listener,
@@ -126,6 +131,15 @@ class ReactExoplayerView extends FrameLayout implements
         BecomingNoisyListener,
         DrmSessionEventListener,
         AdEvent.AdEventListener {
+
+
+    public static final String DRM_SCHEME_EXTRA = "drm_scheme";
+    public static final String DRM_LICENSE_URI_EXTRA = "drm_license_uri";
+    public static final String DRM_KEY_REQUEST_PROPERTIES_EXTRA = "drm_key_request_properties";
+    public static final String DRM_SESSION_FOR_CLEAR_CONTENT = "drm_session_for_clear_content";
+    public static final String DRM_MULTI_SESSION_EXTRA = "drm_multi_session";
+    public static final String DRM_FORCE_DEFAULT_LICENSE_URI_EXTRA = "drm_force_default_license_uri";
+
 
     public static final double DEFAULT_MAX_HEAP_ALLOCATION_PERCENT = 1;
     public static final double DEFAULT_MIN_BACK_BUFFER_MEMORY_RESERVE = 0;
@@ -187,6 +201,7 @@ class ReactExoplayerView extends FrameLayout implements
     // Props from React
     private int backBufferDurationMs = DefaultLoadControl.DEFAULT_BACK_BUFFER_DURATION_MS;
     private Uri srcUri;
+    private String keySetId;
     private long startTimeMs = -1;
     private long endTimeMs = -1;
     private String extension;
@@ -569,7 +584,7 @@ class ReactExoplayerView extends FrameLayout implements
                             public void run() {
                                 // DRM initialization must run on a different thread
                                 DrmSessionManager drmSessionManager = initializePlayerDrm(self);
-                                if (drmSessionManager == null && self.drmUUID != null) {
+                                if (drmSessionManager == null && self.drmUUID != null && false) {
                                     // Failed to intialize DRM session manager - cannot continue
                                     Log.e("ExoPlayer Exception", "Failed to initialize DRM Session Manager Framework!");
                                     eventEmitter.error("Failed to initialize DRM Session Manager Framework!", new Exception("DRM Session Manager Framework failure!"), "3003");
@@ -754,18 +769,6 @@ class ReactExoplayerView extends FrameLayout implements
                     drmCallback.setKeyRequestProperty(keyRequestPropertiesArray[i], keyRequestPropertiesArray[i + 1]);
                 }
             }
-            DataSource dataSource = buildDataSourceFactory(true).createDataSource();
-            DashManifest dashManifest =
-                    DashUtil.loadManifest(dataSource, srcUri);
-            Format format = DashUtil.loadFormatWithDrmInitData(dataSource, dashManifest.getPeriod(0));
-            OfflineLicenseHelper offlineLicenseHelper =
-                    OfflineLicenseHelper.newWidevineInstance(
-                            licenseUrl,
-                            true,
-                            buildHttpDataSourceFactory(false),
-                            null,
-                            new DrmSessionEventListener.EventDispatcher());
-            byte[] keySetId = offlineLicenseHelper.downloadLicense(format);
             FrameworkMediaDrm mediaDrm = FrameworkMediaDrm.newInstance(uuid);
             if (hasDrmFailed) {
                 // When DRM fails using L1 we want to switch to L3
@@ -784,6 +787,12 @@ class ReactExoplayerView extends FrameLayout implements
             eventEmitter.error(ex.toString(), ex, "3006");
             return null;
         }
+    }
+    public static boolean isOnline(Context context) {
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = connectivityManager.getActiveNetworkInfo();
+        return (netInfo != null && netInfo.isConnected());
     }
 
     private MediaSource buildMediaSource(Uri uri, String overrideExtension, DrmSessionManager drmSessionManager, long startTimeMs, long endTimeMs) {
@@ -812,7 +821,24 @@ class ReactExoplayerView extends FrameLayout implements
                     return drmSessionManager;
                 }
             };
-        } else {
+        } else if (!isOnline(getContext())){ // offline
+            MediaItem.Builder builder = mediaItem.buildUpon();
+            builder
+                    .setMediaId(String.valueOf(srcUri))
+                    .setUri(srcUri)
+                    .setCustomCacheKey(null)
+                    .setMimeType("application/dash+xml");
+            String extrasKeySuffix ="";
+            mediaItem =  builder.setDrmConfiguration(
+                    new MediaItem.DrmConfiguration.Builder(drmUUID)
+                            .setLicenseUri(DRM_LICENSE_URI_EXTRA + extrasKeySuffix)
+                            .setMultiSession(false)
+                            .setForceDefaultLicenseUri(false)
+                            .setForceSessionsForAudioAndVideoTracks(false)
+                            .setKeySetId(keySetId.getBytes())
+                            .build()).build();
+            drmProvider = new DefaultDrmSessionManagerProvider();
+        }else {
             drmProvider = new DefaultDrmSessionManagerProvider();
         }
         switch (type) {
@@ -1508,7 +1534,7 @@ class ReactExoplayerView extends FrameLayout implements
 
     // ReactExoplayerViewManager public api
 
-    public void setSrc(final Uri uri, final long startTimeMs, final long endTimeMs, final String extension, Map<String, String> headers) {
+    public void setSrc(final Uri uri, final long startTimeMs, final long endTimeMs, final String extension, Map<String, String> headers, String keySetId) {
         if (uri != null) {
             boolean isSourceEqual = uri.equals(srcUri) && startTimeMs == this.startTimeMs && endTimeMs == this.endTimeMs;
             hasDrmFailed = false;
@@ -1520,6 +1546,7 @@ class ReactExoplayerView extends FrameLayout implements
             this.mediaDataSourceFactory =
                     DataSourceUtil.getDefaultDataSourceFactory(this.themedReactContext, bandwidthMeter,
                             this.requestHeaders);
+            this.keySetId= keySetId;
 
             if (!isSourceEqual) {
                 reloadSource();
@@ -2065,7 +2092,4 @@ class ReactExoplayerView extends FrameLayout implements
         eventEmitter.receiveAdEvent(adEvent.getType().name());
     }
 
-    public String getDRM(String url, String licenseUri) throws IOException {
-        return  "";
-    }
 }
