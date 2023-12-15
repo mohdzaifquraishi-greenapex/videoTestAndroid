@@ -23,3 +23,57 @@ target 'videoTest' do
 
   use_native_modules!
 end
+
+
+post_install do |installer|
+  ## Fix for XCode 12.5
+  find_and_replace("../node_modules/react-native/React/CxxBridge/RCTCxxBridge.mm",
+  "_initializeModules:(NSArray<id<RCTBridgeModule>> *)modules", "_initializeModules:(NSArray<Class> *)modules")
+  find_and_replace("../node_modules/react-native/ReactCommon/turbomodule/core/platform/ios/RCTTurboModuleManager.mm",
+  "RCTBridgeModuleNameForClass(module))", "RCTBridgeModuleNameForClass(Class(module)))")
+  find_and_replace("../node_modules/react-native/ReactCommon/turbomodule/core/platform/ios/RCTTurboModuleManager.mm",
+  "RCTBridgeModuleNameForClass(strongModule))", "RCTBridgeModuleNameForClass(Class(strongModule)))")
+  find_and_replace("../../../node_modules/react-native/React/CxxBridge/RCTCxxBridge.mm",
+  "_initializeModules:(NSArray<id<RCTBridgeModule>> *)modules", "_initializeModules:(NSArray<Class> *)modules")
+  find_and_replace("../../../node_modules/react-native/ReactCommon/turbomodule/core/platform/ios/RCTTurboModuleManager.mm",
+  "RCTBridgeModuleNameForClass(module))", "RCTBridgeModuleNameForClass(Class(module)))")
+  find_and_replace("../../../node_modules/react-native/ReactCommon/turbomodule/core/platform/ios/RCTTurboModuleManager.mm",
+  "RCTBridgeModuleNameForClass(strongModule))", "RCTBridgeModuleNameForClass(Class(strongModule)))")
+  find_and_replace("../../../node_modules/react-native/Libraries/Image/RCTUIImageViewAnimated.m",
+  "_currentFrame.CGImage;","_currentFrame.CGImage ;} else { [super displayLayer:layer];")
+  installer.pods_project.targets.each do |target|
+    # Make it build with XCode 14
+    if target.respond_to?(:product_type) and target.product_type == "com.apple.product-type.bundle"
+      target.build_configurations.each do |config|
+    config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
+      end
+    end
+    # Make it work with GoogleDataTransport
+    if target.name.start_with? "GoogleDataTransport"
+      target.build_configurations.each do |config|
+        config.build_settings['CLANG_WARN_STRICT_PROTOTYPES'] = 'NO'
+  end
+end
+  end
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
+    end
+  end
+  react_native_post_install(installer)
+
+end
+
+def find_and_replace(dir, findstr, replacestr)
+  Dir[dir].each do |name|
+      text = File.read(name)
+      replace = text.gsub(findstr,replacestr)
+      if text != replace
+          puts "Fix: " + name
+          File.open(name, "w") { |file| file.puts replace }
+          STDOUT.flush
+      end
+  end
+  Dir[dir + '*/'].each(&method(:find_and_replace))
+end
+
