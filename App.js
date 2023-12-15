@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, {useMemo, useRef, useState, useEffect} from 'react';
 import {
   Platform,
@@ -20,6 +21,8 @@ import {
 var Buffer = require('buffer/').Buffer;
 const xml2json = require('react-native-xml2js');
 const asset_id = 'sl_as_06033df612f3d8003c5e435a48130769';
+
+const isIOS = () => Platform.OS == 'ios';
 const onBuffer = buffer => {
   console.log(buffer);
 };
@@ -41,24 +44,31 @@ export default function App() {
   const [ifAssetExists, setIfAssetExists] = useState(false);
   useEffect(() => {
     let a = async () => {
-      let videocache = RNFS.ExternalCachesDirectoryPath.replace(
-        'cache',
-        `files/${asset_id}`,
-      );
-      setIfAssetExists(await RNFS.exists(videocache));
+      let videocache = isIOS()
+        ? RNFS.MainBundlePath.concat(`files/${asset_id}`)
+        : RNFS.ExternalCachesDirectoryPath.replace(
+            'cache',
+            `files/${asset_id}`,
+          );
+      let ifexits = await RNFS.exists(videocache);
+      console.log(ifexits);
+      setIfAssetExists(ifexits);
     };
     a();
   }, [percentage > 100, percentage == 0]);
   const source = useMemo(
     () => ({
-      uri: !ifAssetExists
-        ? ( Platform.OS == 'ios' ? m3u8_url :mpd_url)
+      uri: isIOS()
+        ? !ifAssetExists
+          ? m3u8_url
+          : `${RNFS.MainBundlePath.concat(`files/${asset_id}`)}/manifest.m3u8`
+        : !ifAssetExists
+        ? mpd_url
         : `${RNFS.ExternalCachesDirectoryPath.replace(
             'cache',
             `files/${asset_id}`,
           )}/manifest.mpd`,
-      // Platform.OS == 'ios' ? m3u8_url : mpd_url,
-      type: Platform.OS == 'ios' ? 'm3u8' : 'mpd',
+      type: isIOS() ? 'm3u8' : 'mpd',
     }),
     [percentage == 0, percentage > 100],
   );
@@ -68,7 +78,7 @@ export default function App() {
       method: 'GET',
       redirect: 'follow',
     };
-    fetch(mpd_url, requestOptions)
+    fetch(isIOS() ? m3u8_url : mpd_url, requestOptions)
       .then(response => response.text())
       .then(result => {
         _download(result);
@@ -83,8 +93,10 @@ export default function App() {
   };
   const _download = async manifest => {
     try {
-      let grant = await getWritePermission();
-      var path = RNFS.ExternalCachesDirectoryPath.replace('cache', 'files');
+      let grant = !isIOS && (await getWritePermission());
+      var path = isIOS()
+        ? RNFS.MainBundlePath.concat('files')
+        : RNFS.ExternalCachesDirectoryPath.replace('cache', 'files');
       var videocache = path + '/' + asset_id;
       let isDir = await RNFS.exists(videocache);
       if (!isDir) {
@@ -105,6 +117,8 @@ export default function App() {
         a_label = '';
       xml2json.parseString(manifest, (a, data) => {
         // ['AdaptationSet'][0] is audio
+        console.log(data);
+        return;
         let a_rep = data.MPD.Period[0].AdaptationSet[0].Representation;
         a_rep.forEach(d => a_bandwidth.push(d.$.bandwidth));
         let a_seg = data.MPD.Period[0].AdaptationSet[0].SegmentTemplate;
@@ -205,7 +219,7 @@ export default function App() {
           style={styles.backgroundVideo}
           onLoad={onLoad}
           controls
-          keySetId={'ksid17DCAD04'}
+          // keySetId={'ksid17DCAD04'}
         />
         <TouchableOpacity onPress={download} style={styles.btn}>
           <Text>
