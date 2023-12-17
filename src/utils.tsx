@@ -9,8 +9,9 @@ const mpd_url: string =
   'https://vodemedia-usea.streaming.media.azure.net/c4312929-fafb-4317-b529-9c5708d6bc88/Teddy.ism/manifest(format=mpd-time-csf,encryption=cenc)';
   // 'https://vodemedia-usea.streaming.media.azure.net/dd5d9689-b7d9-4efe-9d7f-4f53162ad1b3/Charisma_1.ism/manifest(format=mpd-time-csf,encryption=cenc)';
 const assetID = '0377f837-a760-4917-a3c3-f6bab06ed5f7';
+const token = 'eyJhbGciOiJIUzUxMiJ9.eyJpZCI6NTk5MiwiZXhwIjoxNzAyODI0OTgyLCJ0b2tlbl90eXBlIjoibG9naW4ifQ.Tw7bUfb8cVFjEI3XKXqxtMkKip28PvivTuL6gdxc2QjaXPJThgjcplzI2xOFexSVjsP3Smz_rMGjJprLEbsXPQ';
 const getLicenseUrl = () =>
-  `https://fps.ezdrm.com/api/licenses/auth?pX=C56D7C&assetID=${assetID}`;
+  `https://fps.ezdrm.com/api/licenses/auth?pX=C56D7C&assetID=${assetID}&token=${token}&download=true`;
 const fairplayCertificateUrl =
   'https://localvodsaudi-118668-ruby.b118668.dev.eastus.az.svc.builder.cafe/bx_block_content_management/contents_deeplink/get_fairplay.cer';
 
