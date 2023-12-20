@@ -4,7 +4,7 @@ require_relative '../node_modules/react-native/scripts/react_native_pods'
 
 # Convert all permission pods into static libraries
 
-target 'videoTest' do
+target 'LocalVODSaudi' do
   use_frameworks! :linkage => :static
   config = use_native_modules!
 
@@ -15,8 +15,9 @@ target 'videoTest' do
   )
 
   pod 'RNFS', :path => '../node_modules/react-native-fs'
+  pod 'react-native-static-server', :path=> '../node_modules/react-native-static-server'
 
-  target 'videoTestTests' do
+  target 'LocalVODSaudiTests' do
     inherit! :complete
     # Pods for testing
   end

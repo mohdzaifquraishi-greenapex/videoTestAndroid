@@ -11,7 +11,14 @@ import {
 } from 'react-native';
 import RNFS from 'react-native-fs';
 import Video from 'react-native-video';
-import {drm, getWritePermission, m3u8_url, mpd_url} from './src/utils';
+import {
+  drm,
+  fairplayCertificateUrl,
+  getWritePermission,
+  m3u8_url,
+  mpd_url,
+} from './src/utils';
+import StaticServer from 'react-native-static-server';
 var Buffer = require('buffer/').Buffer;
 const xml2json = require('react-native-xml2js');
 const asset_id = 'sl_as_06033df612f3d8003c5e435a48130769';
@@ -24,10 +31,17 @@ const onError = err => {
   console.log('err', err);
 };
 const onLoad = data => {
-  console.log('data', data);
+  console.log('loading data');
 };
 
 export default function App() {
+  let path = RNFS.DocumentDirectoryPath.concat('/files/');
+  let server = new StaticServer(8080, path);
+
+  // Start the server
+  server.start().then(url => {
+    // console.log('Serving at URL', url);
+  });
   const videoRef = useRef(null);
   let activeDownloads = {};
   const [len, setLen] = useState(-2);
@@ -39,7 +53,7 @@ export default function App() {
   useEffect(() => {
     let a = async () => {
       let videocache = isIOS()
-        ? RNFS.MainBundlePath.concat(`files/${asset_id}`)
+        ? RNFS.DocumentDirectoryPath.concat(`/files/${asset_id}`)
         : RNFS.ExternalCachesDirectoryPath.replace(
             'cache',
             `files/${asset_id}`,
@@ -53,9 +67,7 @@ export default function App() {
   const source = useMemo(
     () => ({
       uri: isIOS()
-        ? !ifAssetExists
-          ? m3u8_url
-          : `${RNFS.MainBundlePath.concat(`files/${asset_id}`)}/manifest.m3u8`
+        ? `http://192.168.0.102:8080/${asset_id}/manifest.m3u8`
         : !ifAssetExists
         ? mpd_url
         : `${RNFS.ExternalCachesDirectoryPath.replace(
@@ -64,37 +76,11 @@ export default function App() {
           )}/manifest.mpd`,
       type: isIOS() ? 'm3u8' : 'mpd',
     }),
-    [percentage == 0, percentage > 100],
+    [percentage == 0, percentage > 100, ifAssetExists],
   );
+  // console.log(source);
 
   const download = () => {
-    // let manifest = `#EXTM3U
-    // #EXT-X-VERSION:7
-    // #EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="audio",NAME="aac_und_2_128027_2_1",LANGUAGE="und",CHANNELS="2",URI="QualityLevels(128027)/Manifest(aac_und_2_128027_2_1,format=m3u8-cmaf,encryption=cbcs-aapl)"
-    // #EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="audio",NAME="aac_und_2_128020_3_1",LANGUAGE="und",DEFAULT=YES,CHANNELS="2",URI="QualityLevels(128020)/Manifest(aac_und_2_128020_3_1,format=m3u8-cmaf,encryption=cbcs-aapl)"
-    // #EXT-X-STREAM-INF:BANDWIDTH=460332,RESOLUTION=320x180,CODECS="avc1.64000d,mp4a.40.2",AUDIO="audio"
-    // QualityLevels(306428)/Manifest(video,format=m3u8-cmaf,encryption=cbcs-aapl)
-    // #EXT-X-I-FRAME-STREAM-INF:BANDWIDTH=460332,RESOLUTION=320x180,CODECS="avc1.64000d",URI="QualityLevels(306428)/Manifest(video,format=m3u8-cmaf,type=keyframes,encryption=cbcs-aapl)"
-    // #EXT-X-STREAM-INF:BANDWIDTH=732214,RESOLUTION=480x270,CODECS="avc1.640015,mp4a.40.2",AUDIO="audio"
-    // QualityLevels(572457)/Manifest(video,format=m3u8-cmaf,encryption=cbcs-aapl)
-    // #EXT-X-I-FRAME-STREAM-INF:BANDWIDTH=732214,RESOLUTION=480x270,CODECS="avc1.640015",URI="QualityLevels(572457)/Manifest(video,format=m3u8-cmaf,type=keyframes,encryption=cbcs-aapl)"
-    // #EXT-X-STREAM-INF:BANDWIDTH=1080851,RESOLUTION=640x360,CODECS="avc1.64001e,mp4a.40.2",AUDIO="audio"
-    // QualityLevels(913590)/Manifest(video,format=m3u8-cmaf,encryption=cbcs-aapl)
-    // #EXT-X-I-FRAME-STREAM-INF:BANDWIDTH=1080851,RESOLUTION=640x360,CODECS="avc1.64001e",URI="QualityLevels(913590)/Manifest(video,format=m3u8-cmaf,type=keyframes,encryption=cbcs-aapl)"
-    // #EXT-X-STREAM-INF:BANDWIDTH=1935070,RESOLUTION=960x540,CODECS="avc1.64001f,mp4a.40.2",AUDIO="audio"
-    // QualityLevels(1749420)/Manifest(video,format=m3u8-cmaf,encryption=cbcs-aapl)
-    // #EXT-X-I-FRAME-STREAM-INF:BANDWIDTH=1935070,RESOLUTION=960x540,CODECS="avc1.64001f",URI="QualityLevels(1749420)/Manifest(video,format=m3u8-cmaf,type=keyframes,encryption=cbcs-aapl)"
-    // #EXT-X-STREAM-INF:BANDWIDTH=2969567,RESOLUTION=1280x720,CODECS="avc1.64001f,mp4a.40.2",AUDIO="audio"
-    // QualityLevels(2761648)/Manifest(video,format=m3u8-cmaf,encryption=cbcs-aapl)
-    // #EXT-X-I-FRAME-STREAM-INF:BANDWIDTH=2969567,RESOLUTION=1280x720,CODECS="avc1.64001f",URI="QualityLevels(2761648)/Manifest(video,format=m3u8-cmaf,type=keyframes,encryption=cbcs-aapl)"
-    // #EXT-X-STREAM-INF:BANDWIDTH=5636919,RESOLUTION=1920x1080,CODECS="avc1.640028,mp4a.40.2",AUDIO="audio"
-    // QualityLevels(5371582)/Manifest(video,format=m3u8-cmaf,encryption=cbcs-aapl)
-    // #EXT-X-I-FRAME-STREAM-INF:BANDWIDTH=5636919,RESOLUTION=1920x1080,CODECS="avc1.640028",URI="QualityLevels(5371582)/Manifest(video,format=m3u8-cmaf,type=keyframes,encryption=cbcs-aapl)"`;
-    // var path = isIOS()
-    //   ? RNFS.MainBundlePath.concat('files')
-    //   : RNFS.ExternalCachesDirectoryPath.replace('cache', 'files');
-    // var videocache = path + '/' + asset_id;
-    // return _downloadIOS(manifest, videocache);
     var requestOptions = {
       method: 'GET',
       redirect: 'follow',
@@ -104,7 +90,7 @@ export default function App() {
       .then(async _manifest => {
         let grant = !isIOS && (await getWritePermission());
         var path = isIOS()
-          ? RNFS.MainBundlePath.concat('files')
+          ? RNFS.DocumentDirectoryPath.concat('/files')
           : RNFS.ExternalCachesDirectoryPath.replace('cache', 'files');
         var videocache = path + '/' + asset_id;
         let isDir = await RNFS.exists(videocache);
@@ -112,6 +98,12 @@ export default function App() {
           await RNFS.mkdir(videocache)
             .then(() => {
               console.log('Create videocache success');
+              downloadVideo(
+                fairplayCertificateUrl,
+                RNFS.DocumentDirectoryPath.concat(
+                  `/files/${asset_id}/get_fairplay.cer`,
+                ),
+              );
             })
             .catch(err => console.log('Create videocache err'));
         }
@@ -225,9 +217,10 @@ export default function App() {
   const _downloadIOS = async (manifest, _path) => {
     var baseurl = m3u8_url.split('/manifest')[0];
     let local_manifest = manifest
-      .replace(/(QualityLevels.*video.*\))/g, 'video')
-      .replace(/(QualityLevels.*aac.*\))/g, 'audio')
-      .replace(/(QualityLevels.*subt.*\))/g, 'subt');
+      .replace(/(QualityLevels.*video.*\))/g, 'video.m3u8')
+      .replace(/(QualityLevels.*aac.*\))/g, 'audio.m3u8')
+      .replace(/(QualityLevels.*subt.*\))/g, 'subt.m3u8');
+    console.log(_path + '/manifest.m3u8');
     RNFS.writeFile(_path + '/manifest.m3u8', local_manifest, 'utf8'); // download manifest
     let result = parsem3u8(manifest);
     // console.log(result,`${baseurl}/${result.levels[result.levels.length - 1].uri}`);
@@ -242,8 +235,8 @@ export default function App() {
         let a_baseurl = audio_url.split('/Manifest')[0];
         let video_manifest = await fetchManifest(video_url);
         let audio_manifest = await fetchManifest(audio_url);
-        RNFS.writeFile(_path + '/video', video_manifest, 'utf8'); // download manifest
-        RNFS.writeFile(_path + '/audio', audio_manifest, 'utf8'); // download manifest
+        RNFS.writeFile(_path + '/video.m3u8', video_manifest, 'utf8'); // download manifest
+        RNFS.writeFile(_path + '/audio.m3u8', audio_manifest, 'utf8'); // download manifest
         let segments = [...parsem3u8(video_manifest).segments];
         asyncForEach(segments.length, async (x, i) => {
           let ar =
@@ -281,6 +274,13 @@ export default function App() {
     return fetch(url, requestOptions).then(response => response.text());
   };
 
+  const downloadCer = () => {
+    downloadVideo(
+      fairplayCertificateUrl,
+      RNFS.DocumentDirectoryPath.concat(`/files/${asset_id}/get_fairplay.cer`),
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <>
@@ -312,6 +312,10 @@ export default function App() {
         </TouchableOpacity>
         <TouchableOpacity onPress={downloadDRM} style={styles.btn}>
           <Text>Download drm</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={downloadCer} style={styles.btn}>
+          <Text>Download Cer</Text>
         </TouchableOpacity>
       </>
     </SafeAreaView>

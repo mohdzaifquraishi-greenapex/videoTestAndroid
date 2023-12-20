@@ -8,12 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		00E356F31AD99517003FC87E /* videoTestTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* videoTestTests.m */; };
+		10576C091BC6E9443264FF17 /* Pods_LocalVODSaudi_LocalVODSaudiTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8C86570C90262E0B73735AA6 /* Pods_LocalVODSaudi_LocalVODSaudiTests.framework */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
-		20D123230E6F1C09FADCA4DC /* Pods_videoTest_videoTestTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 91761453B46A5719C6F3C219 /* Pods_videoTest_videoTestTests.framework */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		E6840AA7929E472A31583A80 /* Pods_videoTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F2A47348388394E758020954 /* Pods_videoTest.framework */; };
+		C70BBC0874A243B4D5C6F00E /* Pods_LocalVODSaudi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C2CD98322B8ABBFEB39628A /* Pods_LocalVODSaudi.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -37,13 +37,17 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = videoTest/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = videoTest/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = videoTest/main.m; sourceTree = "<group>"; };
+		20EDFA9CAF6EE7116035D772 /* Pods-LocalVODSaudi-LocalVODSaudiTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LocalVODSaudi-LocalVODSaudiTests.debug.xcconfig"; path = "Target Support Files/Pods-LocalVODSaudi-LocalVODSaudiTests/Pods-LocalVODSaudi-LocalVODSaudiTests.debug.xcconfig"; sourceTree = "<group>"; };
+		3C2CD98322B8ABBFEB39628A /* Pods_LocalVODSaudi.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_LocalVODSaudi.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		409C88900B9DA9DCECA2BAB1 /* Pods-LocalVODSaudi.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LocalVODSaudi.debug.xcconfig"; path = "Target Support Files/Pods-LocalVODSaudi/Pods-LocalVODSaudi.debug.xcconfig"; sourceTree = "<group>"; };
 		5CEE720E480C8B0F6F28F656 /* Pods-videoTest-videoTestTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-videoTest-videoTestTests.debug.xcconfig"; path = "Target Support Files/Pods-videoTest-videoTestTests/Pods-videoTest-videoTestTests.debug.xcconfig"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = videoTest/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		85D8FD0BA56B9B695B091A27 /* Pods-LocalVODSaudi-LocalVODSaudiTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LocalVODSaudi-LocalVODSaudiTests.release.xcconfig"; path = "Target Support Files/Pods-LocalVODSaudi-LocalVODSaudiTests/Pods-LocalVODSaudi-LocalVODSaudiTests.release.xcconfig"; sourceTree = "<group>"; };
+		8C86570C90262E0B73735AA6 /* Pods_LocalVODSaudi_LocalVODSaudiTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_LocalVODSaudi_LocalVODSaudiTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		90C65C6EAA47A63D5AE3ACEA /* Pods-videoTest.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-videoTest.release.xcconfig"; path = "Target Support Files/Pods-videoTest/Pods-videoTest.release.xcconfig"; sourceTree = "<group>"; };
-		91761453B46A5719C6F3C219 /* Pods_videoTest_videoTestTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_videoTest_videoTestTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		AB3DEE5C264EFA74D8C10FC2 /* Pods-LocalVODSaudi.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LocalVODSaudi.release.xcconfig"; path = "Target Support Files/Pods-LocalVODSaudi/Pods-LocalVODSaudi.release.xcconfig"; sourceTree = "<group>"; };
 		B1EF32B8587430077252156D /* Pods-videoTest-videoTestTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-videoTest-videoTestTests.release.xcconfig"; path = "Target Support Files/Pods-videoTest-videoTestTests/Pods-videoTest-videoTestTests.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		F2A47348388394E758020954 /* Pods_videoTest.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_videoTest.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,7 +55,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				20D123230E6F1C09FADCA4DC /* Pods_videoTest_videoTestTests.framework in Frameworks */,
+				10576C091BC6E9443264FF17 /* Pods_LocalVODSaudi_LocalVODSaudiTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -59,7 +63,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E6840AA7929E472A31583A80 /* Pods_videoTest.framework in Frameworks */,
+				C70BBC0874A243B4D5C6F00E /* Pods_LocalVODSaudi.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -100,8 +104,8 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				F2A47348388394E758020954 /* Pods_videoTest.framework */,
-				91761453B46A5719C6F3C219 /* Pods_videoTest_videoTestTests.framework */,
+				3C2CD98322B8ABBFEB39628A /* Pods_LocalVODSaudi.framework */,
+				8C86570C90262E0B73735AA6 /* Pods_LocalVODSaudi_LocalVODSaudiTests.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -113,6 +117,10 @@
 				90C65C6EAA47A63D5AE3ACEA /* Pods-videoTest.release.xcconfig */,
 				5CEE720E480C8B0F6F28F656 /* Pods-videoTest-videoTestTests.debug.xcconfig */,
 				B1EF32B8587430077252156D /* Pods-videoTest-videoTestTests.release.xcconfig */,
+				409C88900B9DA9DCECA2BAB1 /* Pods-LocalVODSaudi.debug.xcconfig */,
+				AB3DEE5C264EFA74D8C10FC2 /* Pods-LocalVODSaudi.release.xcconfig */,
+				20EDFA9CAF6EE7116035D772 /* Pods-LocalVODSaudi-LocalVODSaudiTests.debug.xcconfig */,
+				85D8FD0BA56B9B695B091A27 /* Pods-LocalVODSaudi-LocalVODSaudiTests.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -277,7 +285,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-videoTest-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-LocalVODSaudi-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -299,7 +307,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-videoTest-videoTestTests-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-LocalVODSaudi-LocalVODSaudiTests-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -312,15 +320,15 @@
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-videoTest/Pods-videoTest-resources-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-LocalVODSaudi/Pods-LocalVODSaudi-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-videoTest/Pods-videoTest-resources-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-LocalVODSaudi/Pods-LocalVODSaudi-resources-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-videoTest/Pods-videoTest-resources.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-LocalVODSaudi/Pods-LocalVODSaudi-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		E311DE7FBECD59AD9384047F /* [CP] Copy Pods Resources */ = {
@@ -329,15 +337,15 @@
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-videoTest-videoTestTests/Pods-videoTest-videoTestTests-resources-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-LocalVODSaudi-LocalVODSaudiTests/Pods-LocalVODSaudi-LocalVODSaudiTests-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-videoTest-videoTestTests/Pods-videoTest-videoTestTests-resources-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-LocalVODSaudi-LocalVODSaudiTests/Pods-LocalVODSaudi-LocalVODSaudiTests-resources-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-videoTest-videoTestTests/Pods-videoTest-videoTestTests-resources.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-LocalVODSaudi-LocalVODSaudiTests/Pods-LocalVODSaudi-LocalVODSaudiTests-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		FD10A7F022414F080027D42C /* Start Packager */ = {
@@ -392,7 +400,7 @@
 /* Begin XCBuildConfiguration section */
 		00E356F61AD99517003FC87E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5CEE720E480C8B0F6F28F656 /* Pods-videoTest-videoTestTests.debug.xcconfig */;
+			baseConfigurationReference = 20EDFA9CAF6EE7116035D772 /* Pods-LocalVODSaudi-LocalVODSaudiTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -419,7 +427,7 @@
 		};
 		00E356F71AD99517003FC87E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B1EF32B8587430077252156D /* Pods-videoTest-videoTestTests.release.xcconfig */;
+			baseConfigurationReference = 85D8FD0BA56B9B695B091A27 /* Pods-LocalVODSaudi-LocalVODSaudiTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COPY_PHASE_STRIP = NO;
@@ -443,7 +451,7 @@
 		};
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 098F51DFE040BB61B5C9D1A6 /* Pods-videoTest.debug.xcconfig */;
+			baseConfigurationReference = 409C88900B9DA9DCECA2BAB1 /* Pods-LocalVODSaudi.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -474,7 +482,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 90C65C6EAA47A63D5AE3ACEA /* Pods-videoTest.release.xcconfig */;
+			baseConfigurationReference = AB3DEE5C264EFA74D8C10FC2 /* Pods-LocalVODSaudi.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;

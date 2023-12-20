@@ -18,6 +18,7 @@
     "react": "17.0.1",
     "react-native": "0.64.0",
     "react-native-fs": "^2.20.0",
+    "react-native-static-server": "^0.5.0",
     "react-native-video": "^5.2.1",
     "react-native-xml2js": "^1.0.3"
   },
