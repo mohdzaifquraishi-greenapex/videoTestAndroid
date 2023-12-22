@@ -1,0 +1,1587 @@
+diff --git a/node_modules/react-native-video/Video.js b/node_modules/react-native-video/Video.js
+index 86b75da..dd0024e 100644
+--- a/node_modules/react-native-video/Video.js
++++ b/node_modules/react-native-video/Video.js
+@@ -343,7 +343,8 @@ export default class Video extends Component {
+         patchVer: source.patchVer || 0,
+         requestHeaders: source.headers ? this.stringsOnlyObject(source.headers) : {},
+         startTime: source.startTime || 0,
+-        endTime: source.endTime
++        endTime: source.endTime,
++        keySetId: this.props.keySetId || ""
+       },
+       onVideoLoadStart: this._onLoadStart,
+       onVideoPlaybackStateChanged: this._onPlaybackStateChanged,
+diff --git a/node_modules/react-native-video/android/build.gradle b/node_modules/react-native-video/android/build.gradle
+index de702f9..067dcf8 100644
+--- a/node_modules/react-native-video/android/build.gradle
++++ b/node_modules/react-native-video/android/build.gradle
+@@ -1,3 +1,4 @@
++// xyz
+ apply plugin: 'com.android.library'
+ 
+ def safeExtGet(prop, fallback) {
+diff --git a/node_modules/react-native-video/android/src/main/AndroidManifest.xml b/node_modules/react-native-video/android/src/main/AndroidManifest.xml
+index 3535ad4..f6f1400 100644
+--- a/node_modules/react-native-video/android/src/main/AndroidManifest.xml
++++ b/node_modules/react-native-video/android/src/main/AndroidManifest.xml
+@@ -1,3 +1,6 @@
+ <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+           package="com.brentvatne.react">
++
++    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
++    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+ </manifest>
+diff --git a/node_modules/react-native-video/android/src/main/java/com/brentvatne/common/DemoDownloadService.java b/node_modules/react-native-video/android/src/main/java/com/brentvatne/common/DemoDownloadService.java
+new file mode 100644
+index 0000000..d3233d1
+--- /dev/null
++++ b/node_modules/react-native-video/android/src/main/java/com/brentvatne/common/DemoDownloadService.java
+@@ -0,0 +1,136 @@
++///*
++// * Copyright (C) 2017 The Android Open Source Project
++// *
++// * Licensed under the Apache License, Version 2.0 (the "License");
++// * you may not use this file except in compliance with the License.
++// * You may obtain a copy of the License at
++// *
++// *      http://www.apache.org/licenses/LICENSE-2.0
++// *
++// * Unless required by applicable law or agreed to in writing, software
++// * distributed under the License is distributed on an "AS IS" BASIS,
++// * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// * See the License for the specific language governing permissions and
++// * limitations under the License.
++// */
++//package com.brentvatne.common;
++//
++//import static com.brentvatne.common.DemoUtil.DOWNLOAD_NOTIFICATION_CHANNEL_ID;
++//
++//import android.app.Notification;
++//import android.content.Context;
++//
++//import androidx.annotation.Nullable;
++//
++//import com.brentvatne.react.R;
++//import com.google.android.exoplayer2.offline.Download;
++//import com.google.android.exoplayer2.offline.DownloadManager;
++//import com.google.android.exoplayer2.offline.DownloadService;
++//import com.google.android.exoplayer2.scheduler.PlatformScheduler;
++//import com.google.android.exoplayer2.scheduler.Requirements;
++//import com.google.android.exoplayer2.scheduler.Scheduler;
++//import com.google.android.exoplayer2.ui.DownloadNotificationHelper;
++//import com.google.android.exoplayer2.util.NotificationUtil;
++//import com.google.android.exoplayer2.util.Util;
++//
++//import java.util.List;
++//
++///**
++// * A service for downloading media.
++// *
++// * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
++// *     contains the same ExoPlayer code). See <a
++// *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
++// *     migration guide</a> for more details, including a script to help with the migration.
++// */
++//@Deprecated
++//public class DemoDownloadService extends DownloadService {
++//
++//  private static final int JOB_ID = 1;
++//  private static final int FOREGROUND_NOTIFICATION_ID = 1;
++//
++//  public DemoDownloadService() {
++//    super(
++//        FOREGROUND_NOTIFICATION_ID,
++//        DEFAULT_FOREGROUND_NOTIFICATION_UPDATE_INTERVAL,
++//        DOWNLOAD_NOTIFICATION_CHANNEL_ID,
++//        R.string.exo_download_notification_channel_name,
++//        /* channelDescriptionResourceId= */ 0);
++//  }
++//
++//  @Override
++//  protected DownloadManager getDownloadManager() {
++//    // This will only happen once, because getDownloadManager is guaranteed to be called only once
++//    // in the life cycle of the process.
++//    DownloadManager downloadManager = DemoUtil.getDownloadManager(/* context= */ this);
++//    DownloadNotificationHelper downloadNotificationHelper =
++//        DemoUtil.getDownloadNotificationHelper(/* context= */ this);
++//    downloadManager.addListener(
++//        new TerminalStateNotificationHelper(
++//            this, downloadNotificationHelper, FOREGROUND_NOTIFICATION_ID + 1));
++//    return downloadManager;
++//  }
++//
++//  @Override
++//  protected Scheduler getScheduler() {
++//    return Util.SDK_INT >= 21 ? new PlatformScheduler(this, JOB_ID) : null;
++//  }
++//
++//  @Override
++//  protected Notification getForegroundNotification(
++//      List<Download> downloads, @Requirements.RequirementFlags int notMetRequirements) {
++//    return DemoUtil.getDownloadNotificationHelper(/* context= */ this)
++//        .buildProgressNotification(
++//            /* context= */ this,
++//            R.drawable.ic_download,
++//            /* contentIntent= */ null,
++//            /* message= */ null,
++//            downloads,
++//            notMetRequirements);
++//  }
++//
++//  /**
++//   * Creates and displays notifications for downloads when they complete or fail.
++//   *
++//   * <p>This helper will outlive the lifespan of a single instance of {@link DemoDownloadService}.
++//   * It is static to avoid leaking the first {@link DemoDownloadService} instance.
++//   */
++//  private static final class TerminalStateNotificationHelper implements DownloadManager.Listener {
++//
++//    private final Context context;
++//    private final DownloadNotificationHelper notificationHelper;
++//
++//    private int nextNotificationId;
++//
++//    public TerminalStateNotificationHelper(
++//        Context context, DownloadNotificationHelper notificationHelper, int firstNotificationId) {
++//      this.context = context.getApplicationContext();
++//      this.notificationHelper = notificationHelper;
++//      nextNotificationId = firstNotificationId;
++//    }
++//
++//    @Override
++//    public void onDownloadChanged(
++//        DownloadManager downloadManager, Download download, @Nullable Exception finalException) {
++//      Notification notification;
++//      if (download.state == Download.STATE_COMPLETED) {
++//        notification =
++//            notificationHelper.buildDownloadCompletedNotification(
++//                context,
++//                R.drawable.ic_download_done,
++//                /* contentIntent= */ null,
++//                Util.fromUtf8Bytes(download.request.data));
++//      } else if (download.state == Download.STATE_FAILED) {
++//        notification =
++//            notificationHelper.buildDownloadFailedNotification(
++//                context,
++//                R.drawable.ic_download_done,
++//                /* contentIntent= */ null,
++//                Util.fromUtf8Bytes(download.request.data));
++//      } else {
++//        return;
++//      }
++//      NotificationUtil.setNotification(context, nextNotificationId++, notification);
++//    }
++//  }
++//}
+diff --git a/node_modules/react-native-video/android/src/main/java/com/brentvatne/common/DemoUtil.java b/node_modules/react-native-video/android/src/main/java/com/brentvatne/common/DemoUtil.java
+new file mode 100644
+index 0000000..db1c591
+--- /dev/null
++++ b/node_modules/react-native-video/android/src/main/java/com/brentvatne/common/DemoUtil.java
+@@ -0,0 +1,195 @@
++/*
++ * Copyright (C) 2016 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package com.brentvatne.common;
++
++import android.content.Context;
++
++import com.google.android.exoplayer2.DefaultRenderersFactory;
++import com.google.android.exoplayer2.RenderersFactory;
++import com.google.android.exoplayer2.database.DatabaseProvider;
++import com.google.android.exoplayer2.database.StandaloneDatabaseProvider;
++import com.google.android.exoplayer2.offline.DownloadManager;
++import com.google.android.exoplayer2.ui.DownloadNotificationHelper;
++import com.google.android.exoplayer2.upstream.DataSource;
++import com.google.android.exoplayer2.upstream.DefaultDataSource;
++import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
++import com.google.android.exoplayer2.upstream.cache.Cache;
++import com.google.android.exoplayer2.upstream.cache.CacheDataSource;
++import com.google.android.exoplayer2.upstream.cache.NoOpCacheEvictor;
++import com.google.android.exoplayer2.upstream.cache.SimpleCache;
++
++import java.io.File;
++import java.net.CookieHandler;
++import java.net.CookieManager;
++import java.net.CookiePolicy;
++import java.util.concurrent.Executors;
++
++/**
++ * Utility methods for the demo app.
++ *
++ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
++ *     contains the same ExoPlayer code). See <a
++ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
++ *     migration guide</a> for more details, including a script to help with the migration.
++ */
++@Deprecated
++public final class DemoUtil {
++
++  public static final String DOWNLOAD_NOTIFICATION_CHANNEL_ID = "download_channel";
++
++  /**
++   * Whether the demo application uses Cronet for networking. Note that Cronet does not provide
++   * automatic support for cookies (https://github.com/google/ExoPlayer/issues/5975).
++   *
++   * <p>If set to false, the platform's default network stack is used with a {@link CookieManager}
++   * configured in {@link #getHttpDataSourceFactory}.
++   */
++  private static final boolean USE_CRONET_FOR_NETWORKING = true;
++
++  private static final String TAG = "DemoUtil";
++  private static final String DOWNLOAD_CONTENT_DIRECTORY = "downloads";
++
++  private static DataSource.Factory dataSourceFactory;
++  private static DataSource.Factory httpDataSourceFactory;
++  private static @MonotonicNonNull DatabaseProvider databaseProvider;
++  private static @MonotonicNonNull File downloadDirectory;
++  private static @MonotonicNonNull Cache downloadCache;
++  private static @MonotonicNonNull DownloadManager downloadManager;
++//  private static @MonotonicNonNull DownloadTracker downloadTracker;
++  private static @MonotonicNonNull DownloadNotificationHelper downloadNotificationHelper;
++
++  /** Returns whether extension renderers should be used. */
++  public static boolean useExtensionRenderers() {
++    return true;
++  }
++
++  public static RenderersFactory buildRenderersFactory(
++      Context context, boolean preferExtensionRenderer) {
++    @DefaultRenderersFactory.ExtensionRendererMode
++    int extensionRendererMode =
++        useExtensionRenderers()
++            ? (preferExtensionRenderer
++                ? DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER
++                : DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
++            : DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF;
++    return new DefaultRenderersFactory(context.getApplicationContext())
++        .setExtensionRendererMode(extensionRendererMode);
++  }
++
++  public static synchronized DataSource.Factory getHttpDataSourceFactory(Context context) {
++    if (httpDataSourceFactory == null) {
++      if (USE_CRONET_FOR_NETWORKING) {
++        context = context.getApplicationContext();
++//        @Nullable CronetEngine cronetEngine = CronetUtil.buildCronetEngine(context);
++//        if (cronetEngine != null) {
++//          httpDataSourceFactory =
++//              new CronetDataSource.Factory(cronetEngine, Executors.newSingleThreadExecutor());
++//        }
++      }
++      if (httpDataSourceFactory == null) {
++        // We don't want to use Cronet, or we failed to instantiate a CronetEngine.
++        CookieManager cookieManager = new CookieManager();
++        cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ORIGINAL_SERVER);
++        CookieHandler.setDefault(cookieManager);
++        httpDataSourceFactory = new DefaultHttpDataSource.Factory();
++      }
++    }
++    return httpDataSourceFactory;
++  }
++
++  /** Returns a {@link DataSource.Factory}. */
++  public static synchronized DataSource.Factory getDataSourceFactory(Context context) {
++    if (dataSourceFactory == null) {
++      context = context.getApplicationContext();
++      DefaultDataSource.Factory upstreamFactory =
++          new DefaultDataSource.Factory(context, getHttpDataSourceFactory(context));
++      dataSourceFactory = buildReadOnlyCacheDataSource(upstreamFactory, getDownloadCache(context));
++    }
++    return dataSourceFactory;
++  }
++
++  public static synchronized DownloadNotificationHelper getDownloadNotificationHelper(
++      Context context) {
++    if (downloadNotificationHelper == null) {
++      downloadNotificationHelper =
++          new DownloadNotificationHelper(context, DOWNLOAD_NOTIFICATION_CHANNEL_ID);
++    }
++    return downloadNotificationHelper;
++  }
++
++//  public static synchronized DownloadManager getDownloadManager(Context context) {
++//    ensureDownloadManagerInitialized(context);
++//    return downloadManager;
++//  }
++
++//  public static synchronized DownloadTracker getDownloadTracker(Context context) {
++//    ensureDownloadManagerInitialized(context);
++//    return downloadTracker;
++//  }
++
++  private static synchronized Cache getDownloadCache(Context context) {
++    if (downloadCache == null) {
++      File downloadContentDirectory =
++          new File(getDownloadDirectory(context), DOWNLOAD_CONTENT_DIRECTORY);
++      downloadCache =
++          new SimpleCache(
++              downloadContentDirectory, new NoOpCacheEvictor(), getDatabaseProvider(context));
++    }
++    return downloadCache;
++  }
++
++//  private static synchronized void ensureDownloadManagerInitialized(Context context) {
++//    if (downloadManager == null) {
++//      downloadManager =
++//          new DownloadManager(
++//              context,
++//              getDatabaseProvider(context),
++//              getDownloadCache(context),
++//              getHttpDataSourceFactory(context),
++//              Executors.newFixedThreadPool(/* nThreads= */ 6));
++//      downloadTracker =
++//          new DownloadTracker(context, getHttpDataSourceFactory(context), downloadManager);
++//    }
++//  }
++
++  private static synchronized DatabaseProvider getDatabaseProvider(Context context) {
++    if (databaseProvider == null) {
++      databaseProvider = new StandaloneDatabaseProvider(context);
++    }
++    return databaseProvider;
++  }
++
++  private static synchronized File getDownloadDirectory(Context context) {
++    if (downloadDirectory == null) {
++      downloadDirectory = context.getExternalFilesDir(/* type= */ null);
++      if (downloadDirectory == null) {
++        downloadDirectory = context.getFilesDir();
++      }
++    }
++    return downloadDirectory;
++  }
++
++  private static CacheDataSource.Factory buildReadOnlyCacheDataSource(
++      DataSource.Factory upstreamFactory, Cache cache) {
++    return new CacheDataSource.Factory()
++        .setCache(cache)
++        .setUpstreamDataSourceFactory(upstreamFactory)
++        .setCacheWriteDataSinkFactory(null)
++        .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR);
++  }
++
++  private DemoUtil() {}
++}
+diff --git a/node_modules/react-native-video/android/src/main/java/com/brentvatne/common/DownloadTracker.java b/node_modules/react-native-video/android/src/main/java/com/brentvatne/common/DownloadTracker.java
+new file mode 100644
+index 0000000..fee9a3b
+--- /dev/null
++++ b/node_modules/react-native-video/android/src/main/java/com/brentvatne/common/DownloadTracker.java
+@@ -0,0 +1,425 @@
++///*
++// * Copyright (C) 2017 The Android Open Source Project
++// *
++// * Licensed under the Apache License, Version 2.0 (the "License");
++// * you may not use this file except in compliance with the License.
++// * You may obtain a copy of the License at
++// *
++// *      http://www.apache.org/licenses/LICENSE-2.0
++// *
++// * Unless required by applicable law or agreed to in writing, software
++// * distributed under the License is distributed on an "AS IS" BASIS,
++// * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// * See the License for the specific language governing permissions and
++// * limitations under the License.
++// */
++//package com.brentvatne.common;
++//
++//import static com.google.common.base.Preconditions.checkNotNull;
++//
++//import android.content.Context;
++//import android.content.DialogInterface;
++//import android.net.Uri;
++//import android.os.AsyncTask;
++//import android.widget.Toast;
++//
++//import androidx.annotation.Nullable;
++//import androidx.annotation.RequiresApi;
++//import androidx.fragment.app.FragmentManager;
++//
++//import com.brentvatne.react.R;
++//import com.google.android.exoplayer2.C;
++//import com.google.android.exoplayer2.Format;
++//import com.google.android.exoplayer2.MediaItem;
++//import com.google.android.exoplayer2.RenderersFactory;
++//import com.google.android.exoplayer2.Tracks;
++//import com.google.android.exoplayer2.drm.DrmInitData;
++//import com.google.android.exoplayer2.drm.DrmSession;
++//import com.google.android.exoplayer2.drm.DrmSessionEventListener;
++//import com.google.android.exoplayer2.drm.OfflineLicenseHelper;
++//import com.google.android.exoplayer2.offline.Download;
++//import com.google.android.exoplayer2.offline.DownloadCursor;
++//import com.google.android.exoplayer2.offline.DownloadHelper;
++//import com.google.android.exoplayer2.offline.DownloadHelper.LiveContentUnsupportedException;
++//import com.google.android.exoplayer2.offline.DownloadIndex;
++//import com.google.android.exoplayer2.offline.DownloadManager;
++//import com.google.android.exoplayer2.offline.DownloadRequest;
++//import com.google.android.exoplayer2.offline.DownloadService;
++//import com.google.android.exoplayer2.source.TrackGroup;
++//import com.google.android.exoplayer2.source.TrackGroupArray;
++//import com.google.android.exoplayer2.trackselection.MappingTrackSelector.MappedTrackInfo;
++//import com.google.android.exoplayer2.trackselection.TrackSelectionParameters;
++//import com.google.android.exoplayer2.upstream.DataSource;
++//import com.google.android.exoplayer2.util.Log;
++//import com.google.android.exoplayer2.util.Util;
++//
++//import java.io.IOException;
++//import java.util.HashMap;
++//import java.util.UUID;
++//import java.util.concurrent.CopyOnWriteArraySet;
++//
++///**
++// * Tracks media that has been downloaded.
++// *
++// * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
++// *     contains the same ExoPlayer code). See <a
++// *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
++// *     migration guide</a> for more details, including a script to help with the migration.
++// */
++//@Deprecated
++//public class DownloadTracker {
++//
++//  /** Listens for changes in the tracked downloads. */
++//  public interface Listener {
++//
++//    /** Called when the tracked downloads changed. */
++//    void onDownloadsChanged();
++//  }
++//
++//  private static final String TAG = "DownloadTracker";
++//
++//  private final Context context;
++//  private final DataSource.Factory dataSourceFactory;
++//  private final CopyOnWriteArraySet<Listener> listeners;
++//  private final HashMap<Uri, Download> downloads;
++//  private final DownloadIndex downloadIndex;
++//
++//  @Nullable private StartDownloadDialogHelper startDownloadDialogHelper;
++//
++//  public DownloadTracker(
++//      Context context, DataSource.Factory dataSourceFactory, DownloadManager downloadManager) {
++//    this.context = context.getApplicationContext();
++//    this.dataSourceFactory = dataSourceFactory;
++//    listeners = new CopyOnWriteArraySet<>();
++//    downloads = new HashMap<>();
++//    downloadIndex = downloadManager.getDownloadIndex();
++//    downloadManager.addListener(new DownloadManagerListener());
++//    loadDownloads();
++//  }
++//
++//  public void addListener(Listener listener) {
++//    listeners.add(checkNotNull(listener));
++//  }
++//
++//  public void removeListener(Listener listener) {
++//    listeners.remove(listener);
++//  }
++//
++//  public boolean isDownloaded(MediaItem mediaItem) {
++//    @Nullable Download download = downloads.get(checkNotNull(mediaItem.localConfiguration).uri);
++//    return download != null && download.state != Download.STATE_FAILED;
++//  }
++//
++//  @Nullable
++//  public DownloadRequest getDownloadRequest(Uri uri) {
++//    @Nullable Download download = downloads.get(uri);
++//    return download != null && download.state != Download.STATE_FAILED ? download.request : null;
++//  }
++//
++//  public void toggleDownload(
++//      FragmentManager fragmentManager, MediaItem mediaItem, RenderersFactory renderersFactory) {
++//    @Nullable Download download = downloads.get(checkNotNull(mediaItem.localConfiguration).uri);
++//    if (download != null && download.state != Download.STATE_FAILED) {
++//      DownloadService.sendRemoveDownload(
++//          context, DemoDownloadService.class, download.request.id, /* foreground= */ false);
++//    } else {
++//      if (startDownloadDialogHelper != null) {
++//        startDownloadDialogHelper.release();
++//      }
++//      startDownloadDialogHelper =
++//          new StartDownloadDialogHelper(
++//              fragmentManager,
++//              DownloadHelper.forMediaItem(context, mediaItem, renderersFactory, dataSourceFactory),
++//              mediaItem);
++//    }
++//  }
++//
++//  private void loadDownloads() {
++//    try (DownloadCursor loadedDownloads = downloadIndex.getDownloads()) {
++//      while (loadedDownloads.moveToNext()) {
++//        Download download = loadedDownloads.getDownload();
++//        downloads.put(download.request.uri, download);
++//      }
++//    } catch (IOException e) {
++//      Log.w(TAG, "Failed to query downloads", e);
++//    }
++//  }
++//
++//  private class DownloadManagerListener implements DownloadManager.Listener {
++//
++//    @Override
++//    public void onDownloadChanged(
++//        DownloadManager downloadManager, Download download, @Nullable Exception finalException) {
++//      downloads.put(download.request.uri, download);
++//      for (Listener listener : listeners) {
++//        listener.onDownloadsChanged();
++//      }
++//    }
++//
++//    @Override
++//    public void onDownloadRemoved(DownloadManager downloadManager, Download download) {
++//      downloads.remove(download.request.uri);
++//      for (Listener listener : listeners) {
++//        listener.onDownloadsChanged();
++//      }
++//    }
++//  }
++//
++//  private final class StartDownloadDialogHelper
++//      implements DownloadHelper.Callback,
++//          TrackSelectionDialog.TrackSelectionListener,
++//          DialogInterface.OnDismissListener {
++//
++//    private final FragmentManager fragmentManager;
++//    private final DownloadHelper downloadHelper;
++//    private final MediaItem mediaItem;
++//
++//    private TrackSelectionDialog trackSelectionDialog;
++//    private WidevineOfflineLicenseFetchTask widevineOfflineLicenseFetchTask;
++//    @Nullable private byte[] keySetId;
++//
++//    public StartDownloadDialogHelper(
++//        FragmentManager fragmentManager, DownloadHelper downloadHelper, MediaItem mediaItem) {
++//      this.fragmentManager = fragmentManager;
++//      this.downloadHelper = downloadHelper;
++//      this.mediaItem = mediaItem;
++//      downloadHelper.prepare(this);
++//    }
++//
++//    public void release() {
++//      downloadHelper.release();
++//      if (widevineOfflineLicenseFetchTask != null) {
++//        widevineOfflineLicenseFetchTask.cancel(false);
++//      }
++//    }
++//
++//    // DownloadHelper.Callback implementation.
++//
++//    @Override
++//    public void onPrepared(DownloadHelper helper) {
++//      @Nullable Format format = getFirstFormatWithDrmInitData(helper);
++//      if (format == null) {
++//        onDownloadPrepared(helper);
++//        return;
++//      }
++//
++//      // The content is DRM protected. We need to acquire an offline license.
++//      if (Util.SDK_INT < 18) {
++//        Toast.makeText(context, R.string.error_drm_unsupported_before_api_18, Toast.LENGTH_LONG)
++//            .show();
++//        Log.e(TAG, "Downloading DRM protected content is not supported on API versions below 18");
++//        return;
++//      }
++//      // TODO(internal b/163107948): Support cases where DrmInitData are not in the manifest.
++//      if (!hasNonNullWidevineSchemaData(format.drmInitData)) {
++//        Toast.makeText(context, R.string.download_start_error_offline_license, Toast.LENGTH_LONG)
++//            .show();
++//        Log.e(
++//            TAG,
++//            "Downloading content where DRM scheme data is not located in the manifest is not"
++//                + " supported");
++//        return;
++//      }
++//      widevineOfflineLicenseFetchTask =
++//          new WidevineOfflineLicenseFetchTask(
++//              format,
++//              mediaItem.localConfiguration.drmConfiguration,
++//              dataSourceFactory,
++//              /* dialogHelper= */ this,
++//              helper);
++//      widevineOfflineLicenseFetchTask.execute();
++//    }
++//
++//    @Override
++//    public void onPrepareError(DownloadHelper helper, IOException e) {
++//      boolean isLiveContent = e instanceof LiveContentUnsupportedException;
++//      int toastStringId =
++//          isLiveContent ? R.string.download_live_unsupported : R.string.download_start_error;
++//      String logMessage =
++//          isLiveContent ? "Downloading live content unsupported" : "Failed to start download";
++//      Toast.makeText(context, toastStringId, Toast.LENGTH_LONG).show();
++//      Log.e(TAG, logMessage, e);
++//    }
++//
++//    // TrackSelectionListener implementation.
++//
++//    @Override
++//    public void onTracksSelected(TrackSelectionParameters trackSelectionParameters) {
++//      for (int periodIndex = 0; periodIndex < downloadHelper.getPeriodCount(); periodIndex++) {
++//        downloadHelper.clearTrackSelections(periodIndex);
++//        downloadHelper.addTrackSelection(periodIndex, trackSelectionParameters);
++//      }
++//      DownloadRequest downloadRequest = buildDownloadRequest();
++//      if (downloadRequest.streamKeys.isEmpty()) {
++//        // All tracks were deselected in the dialog. Don't start the download.
++//        return;
++//      }
++//      startDownload(downloadRequest);
++//    }
++//
++//    // DialogInterface.OnDismissListener implementation.
++//
++//    @Override
++//    public void onDismiss(DialogInterface dialogInterface) {
++//      trackSelectionDialog = null;
++//      downloadHelper.release();
++//    }
++//
++//    // Internal methods.
++//
++//    /**
++//     * Returns the first {@link Format} with a non-null {@link Format#drmInitData} found in the
++//     * content's tracks, or null if none is found.
++//     */
++//    @Nullable
++//    private Format getFirstFormatWithDrmInitData(DownloadHelper helper) {
++//      for (int periodIndex = 0; periodIndex < helper.getPeriodCount(); periodIndex++) {
++//        MappedTrackInfo mappedTrackInfo = helper.getMappedTrackInfo(periodIndex);
++//        for (int rendererIndex = 0;
++//            rendererIndex < mappedTrackInfo.getRendererCount();
++//            rendererIndex++) {
++//          TrackGroupArray trackGroups = mappedTrackInfo.getTrackGroups(rendererIndex);
++//          for (int trackGroupIndex = 0; trackGroupIndex < trackGroups.length; trackGroupIndex++) {
++//            TrackGroup trackGroup = trackGroups.get(trackGroupIndex);
++//            for (int formatIndex = 0; formatIndex < trackGroup.length; formatIndex++) {
++//              Format format = trackGroup.getFormat(formatIndex);
++//              if (format.drmInitData != null) {
++//                return format;
++//              }
++//            }
++//          }
++//        }
++//      }
++//      return null;
++//    }
++//
++//    private void onOfflineLicenseFetched(DownloadHelper helper, byte[] keySetId) {
++//      this.keySetId = keySetId;
++//      onDownloadPrepared(helper);
++//    }
++//
++//    private void onOfflineLicenseFetchedError(DrmSession.DrmSessionException e) {
++//      Toast.makeText(context, R.string.download_start_error_offline_license, Toast.LENGTH_LONG)
++//          .show();
++//      Log.e(TAG, "Failed to fetch offline DRM license", e);
++//    }
++//
++//    private void onDownloadPrepared(DownloadHelper helper) {
++//      if (helper.getPeriodCount() == 0) {
++//        Log.d(TAG, "No periods found. Downloading entire stream.");
++//        startDownload();
++//        downloadHelper.release();
++//        return;
++//      }
++//
++//      Tracks tracks = downloadHelper.getTracks(/* periodIndex= */ 0);
++//      if (!TrackSelectionDialog.willHaveContent(tracks)) {
++//        Log.d(TAG, "No dialog content. Downloading entire stream.");
++//        startDownload();
++//        downloadHelper.release();
++//        return;
++//      }
++//      trackSelectionDialog =
++//          TrackSelectionDialog.createForTracksAndParameters(
++//              /* titleId= */ R.string.exo_download_description,
++//              tracks,
++//              DownloadHelper.getDefaultTrackSelectorParameters(context),
++//              /* allowAdaptiveSelections= */ false,
++//              /* allowMultipleOverrides= */ true,
++//              /* onTracksSelectedListener= */ this,
++//              /* onDismissListener= */ this);
++//      trackSelectionDialog.show(fragmentManager, /* tag= */ null);
++//    }
++//
++//    public void startManualDownload(){
++//      startDownload();
++//      downloadHelper.release();
++//      return;
++//    }
++//    /**
++//     * Returns whether any {@link DrmInitData.SchemeData} that {@linkplain
++//     * DrmInitData.SchemeData#matches(UUID) matches} {@link C#WIDEVINE_UUID} has non-null {@link
++//     * DrmInitData.SchemeData#data}.
++//     */
++//    private boolean hasNonNullWidevineSchemaData(DrmInitData drmInitData) {
++//      for (int i = 0; i < drmInitData.schemeDataCount; i++) {
++//        DrmInitData.SchemeData schemeData = drmInitData.get(i);
++//        if (schemeData.matches(C.WIDEVINE_UUID) && schemeData.hasData()) {
++//          return true;
++//        }
++//      }
++//      return false;
++//    }
++//
++//    private void startDownload() {
++//      startDownload(buildDownloadRequest());
++//    }
++//
++//    private void startDownload(DownloadRequest downloadRequest) {
++//      DownloadService.sendAddDownload(
++//          context, DemoDownloadService.class, downloadRequest, /* foreground= */ false);
++//    }
++//
++//    private DownloadRequest buildDownloadRequest() {
++//      return downloadHelper
++//          .getDownloadRequest(
++//              Util.getUtf8Bytes(checkNotNull(mediaItem.mediaMetadata.title.toString())))
++//          .copyWithKeySetId(keySetId);
++//    }
++//  }
++//
++//  /** Downloads a Widevine offline license in a background thread. */
++//  @RequiresApi(18)
++//  private static final class WidevineOfflineLicenseFetchTask extends AsyncTask<Void, Void, Void> {
++//
++//    private final Format format;
++//    private final MediaItem.DrmConfiguration drmConfiguration;
++//    private final DataSource.Factory dataSourceFactory;
++//    private final StartDownloadDialogHelper dialogHelper;
++//    private final DownloadHelper downloadHelper;
++//
++//    @Nullable private byte[] keySetId;
++//    @Nullable private DrmSession.DrmSessionException drmSessionException;
++//
++//    public WidevineOfflineLicenseFetchTask(
++//        Format format,
++//        MediaItem.DrmConfiguration drmConfiguration,
++//        DataSource.Factory dataSourceFactory,
++//        StartDownloadDialogHelper dialogHelper,
++//        DownloadHelper downloadHelper) {
++//      this.format = format;
++//      this.drmConfiguration = drmConfiguration;
++//      this.dataSourceFactory = dataSourceFactory;
++//      this.dialogHelper = dialogHelper;
++//      this.downloadHelper = downloadHelper;
++//    }
++//
++//    @Override
++//    protected Void doInBackground(Void... voids) {
++//      OfflineLicenseHelper offlineLicenseHelper =
++//          OfflineLicenseHelper.newWidevineInstance(
++//              drmConfiguration.licenseUri.toString(),
++//              drmConfiguration.forceDefaultLicenseUri,
++//              dataSourceFactory,
++//              drmConfiguration.licenseRequestHeaders,
++//              new DrmSessionEventListener.EventDispatcher());
++//      try {
++//        keySetId = offlineLicenseHelper.downloadLicense(format);
++//      } catch (DrmSession.DrmSessionException e) {
++//        drmSessionException = e;
++//      } finally {
++//        offlineLicenseHelper.release();
++//      }
++//      return null;
++//    }
++//
++//    @Override
++//    protected void onPostExecute(Void aVoid) {
++//      if (drmSessionException != null) {
++//        dialogHelper.onOfflineLicenseFetchedError(drmSessionException);
++//      } else {
++//        dialogHelper.onOfflineLicenseFetched(downloadHelper, checkNotNull(keySetId));
++//      }
++//    }
++//  }
++//}
+diff --git a/node_modules/react-native-video/android/src/main/java/com/brentvatne/common/MonotonicNonNull.java b/node_modules/react-native-video/android/src/main/java/com/brentvatne/common/MonotonicNonNull.java
+new file mode 100644
+index 0000000..6918b70
+--- /dev/null
++++ b/node_modules/react-native-video/android/src/main/java/com/brentvatne/common/MonotonicNonNull.java
+@@ -0,0 +1,4 @@
++package com.brentvatne.common;
++
++public @interface MonotonicNonNull {
++}
+diff --git a/node_modules/react-native-video/android/src/main/java/com/brentvatne/common/TrackSelectionDialog.java b/node_modules/react-native-video/android/src/main/java/com/brentvatne/common/TrackSelectionDialog.java
+new file mode 100644
+index 0000000..fe54d08
+--- /dev/null
++++ b/node_modules/react-native-video/android/src/main/java/com/brentvatne/common/TrackSelectionDialog.java
+@@ -0,0 +1,371 @@
++///*
++// * Copyright (C) 2019 The Android Open Source Project
++// *
++// * Licensed under the Apache License, Version 2.0 (the "License");
++// * you may not use this file except in compliance with the License.
++// * You may obtain a copy of the License at
++// *
++// *      http://www.apache.org/licenses/LICENSE-2.0
++// *
++// * Unless required by applicable law or agreed to in writing, software
++// * distributed under the License is distributed on an "AS IS" BASIS,
++// * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// * See the License for the specific language governing permissions and
++// * limitations under the License.
++// */
++//package com.brentvatne.common;
++//
++//import android.annotation.SuppressLint;
++//import android.app.Dialog;
++//import android.content.DialogInterface;
++//import android.content.res.Resources;
++//import android.os.Bundle;
++//import android.util.SparseArray;
++//import android.view.LayoutInflater;
++//import android.view.View;
++//import android.view.ViewGroup;
++//import android.widget.Button;
++//import androidx.annotation.Nullable;
++//import androidx.appcompat.app.AppCompatDialog;
++//import androidx.fragment.app.DialogFragment;
++//import androidx.fragment.app.Fragment;
++//import androidx.fragment.app.FragmentManager;
++//import androidx.fragment.app.FragmentPagerAdapter;
++//import androidx.viewpager.widget.ViewPager;
++//
++//import com.brentvatne.react.R;
++//import com.google.android.exoplayer2.C;
++//import com.google.android.exoplayer2.Player;
++//import com.google.android.exoplayer2.Tracks;
++//import com.google.android.exoplayer2.source.TrackGroup;
++//import com.google.android.exoplayer2.trackselection.TrackSelectionOverride;
++//import com.google.android.exoplayer2.trackselection.TrackSelectionParameters;
++//import com.google.android.exoplayer2.ui.TrackSelectionView;
++//import com.google.android.material.tabs.TabLayout;
++//import com.google.common.collect.ImmutableList;
++//import java.util.ArrayList;
++//import java.util.Collections;
++//import java.util.HashMap;
++//import java.util.List;
++//import java.util.Map;
++//
++///**
++// * Dialog to select tracks.
++// *
++// * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
++// *     contains the same ExoPlayer code). See <a
++// *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
++// *     migration guide</a> for more details, including a script to help with the migration.
++// */
++//@Deprecated
++//public final class TrackSelectionDialog extends DialogFragment {
++//
++//  /** Called when tracks are selected. */
++//  public interface TrackSelectionListener {
++//
++//    /**
++//     * Called when tracks are selected.
++//     *
++//     * @param trackSelectionParameters A {@link TrackSelectionParameters} representing the selected
++//     *     tracks. Any manual selections are defined by {@link
++//     *     TrackSelectionParameters#disabledTrackTypes} and {@link
++//     *     TrackSelectionParameters#overrides}.
++//     */
++//    void onTracksSelected(TrackSelectionParameters trackSelectionParameters);
++//  }
++//
++//  public static final ImmutableList<Integer> SUPPORTED_TRACK_TYPES =
++//          ImmutableList.of(C.TRACK_TYPE_VIDEO, C.TRACK_TYPE_AUDIO, C.TRACK_TYPE_TEXT);
++//
++//  private final SparseArray<TrackSelectionViewFragment> tabFragments;
++//  private final ArrayList<Integer> tabTrackTypes;
++//
++//  private int titleId;
++//  private DialogInterface.OnClickListener onClickListener;
++//  private DialogInterface.OnDismissListener onDismissListener;
++//
++//  /**
++//   * Returns whether a track selection dialog will have content to display if initialized with the
++//   * specified {@link Player}.
++//   */
++//  public static boolean willHaveContent(Player player) {
++//    return willHaveContent(player.getCurrentTracks());
++//  }
++//
++//  /**
++//   * Returns whether a track selection dialog will have content to display if initialized with the
++//   * specified {@link Tracks}.
++//   */
++//  public static boolean willHaveContent(Tracks tracks) {
++//    for (Tracks.Group trackGroup : tracks.getGroups()) {
++//      if (SUPPORTED_TRACK_TYPES.contains(trackGroup.getType())) {
++//        return true;
++//      }
++//    }
++//    return false;
++//  }
++//
++//  /**
++//   * Creates a dialog for a given {@link Player}, whose parameters will be automatically updated
++//   * when tracks are selected.
++//   *
++//   * @param player The {@link Player}.
++//   * @param onDismissListener A {@link DialogInterface.OnDismissListener} to call when the dialog is
++//   *     dismissed.
++//   */
++//  public static TrackSelectionDialog createForPlayer(
++//          Player player, DialogInterface.OnDismissListener onDismissListener) {
++//    return createForTracksAndParameters(
++//            R.string.track_selection_title,
++//            player.getCurrentTracks(),
++//            player.getTrackSelectionParameters(),
++//            /* allowAdaptiveSelections= */ true,
++//            /* allowMultipleOverrides= */ false,
++//            player::setTrackSelectionParameters,
++//            onDismissListener);
++//  }
++//
++//  /**
++//   * Creates a dialog for given {@link Tracks} and {@link TrackSelectionParameters}.
++//   *
++//   * @param titleId The resource id of the dialog title.
++//   * @param tracks The {@link Tracks} describing the tracks to display.
++//   * @param trackSelectionParameters The initial {@link TrackSelectionParameters}.
++//   * @param allowAdaptiveSelections Whether adaptive selections (consisting of more than one track)
++//   *     can be made.
++//   * @param allowMultipleOverrides Whether tracks from multiple track groups can be selected.
++//   * @param trackSelectionListener Called when tracks are selected.
++//   * @param onDismissListener {@link DialogInterface.OnDismissListener} called when the dialog is
++//   *     dismissed.
++//   */
++//  public static TrackSelectionDialog createForTracksAndParameters(
++//          int titleId,
++//          Tracks tracks,
++//          TrackSelectionParameters trackSelectionParameters,
++//          boolean allowAdaptiveSelections,
++//          boolean allowMultipleOverrides,
++//          TrackSelectionListener trackSelectionListener,
++//          DialogInterface.OnDismissListener onDismissListener) {
++//    TrackSelectionDialog trackSelectionDialog = new TrackSelectionDialog();
++//    trackSelectionDialog.init(
++//            tracks,
++//            trackSelectionParameters,
++//            titleId,
++//            allowAdaptiveSelections,
++//            allowMultipleOverrides,
++//            /* onClickListener= */ (dialog, which) -> {
++//              TrackSelectionParameters.Builder builder = trackSelectionParameters.buildUpon();
++//              for (int i = 0; i < SUPPORTED_TRACK_TYPES.size(); i++) {
++//                int trackType = SUPPORTED_TRACK_TYPES.get(i);
++//                builder.setTrackTypeDisabled(trackType, trackSelectionDialog.getIsDisabled(trackType));
++//                builder.clearOverridesOfType(trackType);
++//                Map<TrackGroup, TrackSelectionOverride> overrides =
++//                        trackSelectionDialog.getOverrides(trackType);
++//                for (TrackSelectionOverride override : overrides.values()) {
++//                  builder.addOverride(override);
++//                }
++//              }
++//              trackSelectionListener.onTracksSelected(builder.build());
++//            },
++//            onDismissListener);
++//    return trackSelectionDialog;
++//  }
++//
++//  public TrackSelectionDialog() {
++//    tabFragments = new SparseArray<>();
++//    tabTrackTypes = new ArrayList<>();
++//    // Retain instance across activity re-creation to prevent losing access to init data.
++//    setRetainInstance(true);
++//  }
++//
++//  private void init(
++//          Tracks tracks,
++//          TrackSelectionParameters trackSelectionParameters,
++//          int titleId,
++//          boolean allowAdaptiveSelections,
++//          boolean allowMultipleOverrides,
++//          DialogInterface.OnClickListener onClickListener,
++//          DialogInterface.OnDismissListener onDismissListener) {
++//    this.titleId = titleId;
++//    this.onClickListener = onClickListener;
++//    this.onDismissListener = onDismissListener;
++//
++//    for (int i = 0; i < SUPPORTED_TRACK_TYPES.size(); i++) {
++//      @C.TrackType int trackType = SUPPORTED_TRACK_TYPES.get(i);
++//      ArrayList<Tracks.Group> trackGroups = new ArrayList<>();
++//      for (Tracks.Group trackGroup : tracks.getGroups()) {
++//        if (trackGroup.getType() == trackType) {
++//          trackGroups.add(trackGroup);
++//        }
++//      }
++//      if (!trackGroups.isEmpty()) {
++//        TrackSelectionViewFragment tabFragment = new TrackSelectionViewFragment();
++//        tabFragment.init(
++//                trackGroups,
++//                trackSelectionParameters.disabledTrackTypes.contains(trackType),
++//                trackSelectionParameters.overrides,
++//                allowAdaptiveSelections,
++//                allowMultipleOverrides);
++//        tabFragments.put(trackType, tabFragment);
++//        tabTrackTypes.add(trackType);
++//      }
++//    }
++//  }
++//
++//  /**
++//   * Returns whether the disabled option is selected for the specified track type.
++//   *
++//   * @param trackType The track type.
++//   * @return Whether the disabled option is selected for the track type.
++//   */
++//  public boolean getIsDisabled(int trackType) {
++//    TrackSelectionViewFragment trackView = tabFragments.get(trackType);
++//    return trackView != null && trackView.isDisabled;
++//  }
++//
++//  /**
++//   * Returns the selected track overrides for the specified track type.
++//   *
++//   * @param trackType The track type.
++//   * @return The track overrides for the track type.
++//   */
++//  public Map<TrackGroup, TrackSelectionOverride> getOverrides(int trackType) {
++//    TrackSelectionViewFragment trackView = tabFragments.get(trackType);
++//    return trackView == null ? Collections.emptyMap() : trackView.overrides;
++//  }
++//
++//  @Override
++//  public Dialog onCreateDialog(Bundle savedInstanceState) {
++//    // We need to own the view to let tab layout work correctly on all API levels. We can't use
++//    // AlertDialog because it owns the view itself, so we use AppCompatDialog instead, themed using
++//    // the AlertDialog theme overlay with force-enabled title.
++//    AppCompatDialog dialog =
++//            new AppCompatDialog(getActivity(), R.style.TrackSelectionDialogThemeOverlay);
++//    dialog.setTitle(titleId);
++//    return dialog;
++//  }
++//
++//  @Override
++//  public void onDismiss(DialogInterface dialog) {
++//    super.onDismiss(dialog);
++//    onDismissListener.onDismiss(dialog);
++//  }
++//
++//  @Override
++//  public View onCreateView(
++//          LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
++//    View dialogView = inflater.inflate(R.layout.track_selection_dialog, container, false);
++//    TabLayout tabLayout = dialogView.findViewById(R.id.track_selection_dialog_tab_layout);
++//    ViewPager viewPager = dialogView.findViewById(R.id.track_selection_dialog_view_pager);
++//    Button cancelButton = dialogView.findViewById(R.id.track_selection_dialog_cancel_button);
++//    Button okButton = dialogView.findViewById(R.id.track_selection_dialog_ok_button);
++//    viewPager.setAdapter(new FragmentAdapter(getChildFragmentManager()));
++//    tabLayout.setupWithViewPager(viewPager);
++//    tabLayout.setVisibility(tabFragments.size() > 1 ? View.VISIBLE : View.GONE);
++//    cancelButton.setOnClickListener(view -> dismiss());
++//    okButton.setOnClickListener(
++//            view -> {
++//              onClickListener.onClick(getDialog(), DialogInterface.BUTTON_POSITIVE);
++//              dismiss();
++//            });
++//    return dialogView;
++//  }
++//
++//  private static String getTrackTypeString(Resources resources, @C.TrackType int trackType) {
++//    switch (trackType) {
++//      case C.TRACK_TYPE_VIDEO:
++//        return resources.getString(R.string.exo_track_selection_title_video);
++//      case C.TRACK_TYPE_AUDIO:
++//        return resources.getString(R.string.exo_track_selection_title_audio);
++//      case C.TRACK_TYPE_TEXT:
++//        return resources.getString(R.string.exo_track_selection_title_text);
++//      default:
++//        throw new IllegalArgumentException();
++//    }
++//  }
++//
++//  private final class FragmentAdapter extends FragmentPagerAdapter {
++//
++//    @SuppressLint("WrongConstant")
++//    public FragmentAdapter(FragmentManager fragmentManager) {
++//      super(fragmentManager, FragmentPagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
++//    }
++//
++//    @Override
++//    public Fragment getItem(int position) {
++//      return tabFragments.get(tabTrackTypes.get(position));
++//    }
++//
++//    @Override
++//    public int getCount() {
++//      return tabTrackTypes.size();
++//    }
++//
++//    @Override
++//    public CharSequence getPageTitle(int position) {
++//      return getTrackTypeString(getResources(), tabTrackTypes.get(position));
++//    }
++//  }
++//
++//  /** Fragment to show a track selection in tab of the track selection dialog. */
++//  public static final class TrackSelectionViewFragment extends Fragment
++//          implements TrackSelectionView.TrackSelectionListener {
++//
++//    private List<Tracks.Group> trackGroups;
++//    private boolean allowAdaptiveSelections;
++//    private boolean allowMultipleOverrides;
++//
++//    /* package */ boolean isDisabled;
++//    /* package */ Map<TrackGroup, TrackSelectionOverride> overrides;
++//
++//    public TrackSelectionViewFragment() {
++//      // Retain instance across activity re-creation to prevent losing access to init data.
++//      setRetainInstance(true);
++//    }
++//
++//    public void init(
++//            List<Tracks.Group> trackGroups,
++//            boolean isDisabled,
++//            Map<TrackGroup, TrackSelectionOverride> overrides,
++//            boolean allowAdaptiveSelections,
++//            boolean allowMultipleOverrides) {
++//      this.trackGroups = trackGroups;
++//      this.isDisabled = isDisabled;
++//      this.allowAdaptiveSelections = allowAdaptiveSelections;
++//      this.allowMultipleOverrides = allowMultipleOverrides;
++//      // TrackSelectionView does this filtering internally, but we need to do it here as well to
++//      // handle the case where the TrackSelectionView is never created.
++//      this.overrides =
++//              new HashMap<>(
++//                      TrackSelectionView.filterOverrides(overrides, trackGroups, allowMultipleOverrides));
++//    }
++//
++//    @Override
++//    public View onCreateView(
++//            LayoutInflater inflater,
++//            @Nullable ViewGroup container,
++//            @Nullable Bundle savedInstanceState) {
++//      View rootView =
++//              inflater.inflate(
++//                      R.layout.exo_track_selection_dialog, container, /* attachToRoot= */ false);
++//      TrackSelectionView trackSelectionView = rootView.findViewById(R.id.exo_track_selection_view);
++//      trackSelectionView.setShowDisableOption(true);
++//      trackSelectionView.setAllowMultipleOverrides(allowMultipleOverrides);
++//      trackSelectionView.setAllowAdaptiveSelections(allowAdaptiveSelections);
++//      trackSelectionView.init(
++//              trackGroups,
++//              isDisabled,
++//              overrides,
++//              /* trackFormatComparator= */ null,
++//              /* listener= */ this);
++//      return rootView;
++//    }
++//
++//    @Override
++//    public void onTrackSelectionChanged(
++//            boolean isDisabled, Map<TrackGroup, TrackSelectionOverride> overrides) {
++//      this.isDisabled = isDisabled;
++//      this.overrides = overrides;
++//    }
++//  }
++//}
+diff --git a/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java b/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java
+index 544c6ac..074023a 100644
+--- a/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java
++++ b/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java
+@@ -11,6 +11,8 @@ import android.app.Activity;
+ import android.app.ActivityManager;
+ import android.content.Context;
+ import android.media.AudioManager;
++import android.net.ConnectivityManager;
++import android.net.NetworkInfo;
+ import android.net.Uri;
+ import android.os.Handler;
+ import android.os.Looper;
+@@ -23,6 +25,7 @@ import android.view.accessibility.CaptioningManager;
+ import android.widget.FrameLayout;
+ import android.widget.ImageButton;
+ 
++import androidx.annotation.Nullable;
+ import androidx.annotation.WorkerThread;
+ import androidx.activity.OnBackPressedCallback;
+ 
+@@ -50,15 +53,18 @@ import com.google.android.exoplayer2.Timeline;
+ import com.google.android.exoplayer2.Tracks;
+ import com.google.android.exoplayer2.drm.DefaultDrmSessionManager;
+ import com.google.android.exoplayer2.drm.DefaultDrmSessionManagerProvider;
++import com.google.android.exoplayer2.drm.DrmSession;
+ import com.google.android.exoplayer2.drm.DrmSessionEventListener;
+ import com.google.android.exoplayer2.drm.DrmSessionManager;
+ import com.google.android.exoplayer2.drm.DrmSessionManagerProvider;
+ import com.google.android.exoplayer2.drm.FrameworkMediaDrm;
+ import com.google.android.exoplayer2.drm.HttpMediaDrmCallback;
++import com.google.android.exoplayer2.drm.OfflineLicenseHelper;
+ import com.google.android.exoplayer2.drm.UnsupportedDrmException;
+ import com.google.android.exoplayer2.mediacodec.MediaCodecInfo;
+ import com.google.android.exoplayer2.mediacodec.MediaCodecUtil;
+ import com.google.android.exoplayer2.metadata.Metadata;
++import com.google.android.exoplayer2.offline.StreamKey;
+ import com.google.android.exoplayer2.source.MediaSource;
+ import com.google.android.exoplayer2.source.MergingMediaSource;
+ import com.google.android.exoplayer2.source.ProgressiveMediaSource;
+@@ -97,10 +103,13 @@ import com.google.android.exoplayer2.source.DefaultMediaSourceFactory;
+ import com.google.android.exoplayer2.source.ClippingMediaSource;
+ 
+ import com.google.common.collect.ImmutableList;
++
++import java.io.IOException;
+ import java.net.CookieHandler;
+ import java.net.CookieManager;
+ import java.net.CookiePolicy;
+ import java.util.ArrayList;
++import java.util.Collections;
+ import java.util.List;
+ import java.util.Locale;
+ import java.util.UUID;
+@@ -114,6 +123,7 @@ import java.util.concurrent.TimeUnit;
+ import java.lang.Integer;
+ 
+ @SuppressLint("ViewConstructor")
++public
+ class ReactExoplayerView extends FrameLayout implements
+         LifecycleEventListener,
+         Player.Listener,
+@@ -122,6 +132,15 @@ class ReactExoplayerView extends FrameLayout implements
+         DrmSessionEventListener,
+         AdEvent.AdEventListener {
+ 
++
++    public static final String DRM_SCHEME_EXTRA = "drm_scheme";
++    public static final String DRM_LICENSE_URI_EXTRA = "drm_license_uri";
++    public static final String DRM_KEY_REQUEST_PROPERTIES_EXTRA = "drm_key_request_properties";
++    public static final String DRM_SESSION_FOR_CLEAR_CONTENT = "drm_session_for_clear_content";
++    public static final String DRM_MULTI_SESSION_EXTRA = "drm_multi_session";
++    public static final String DRM_FORCE_DEFAULT_LICENSE_URI_EXTRA = "drm_force_default_license_uri";
++
++
+     public static final double DEFAULT_MAX_HEAP_ALLOCATION_PERCENT = 1;
+     public static final double DEFAULT_MIN_BACK_BUFFER_MEMORY_RESERVE = 0;
+     public static final double DEFAULT_MIN_BUFFER_MEMORY_RESERVE = 0;
+@@ -182,6 +201,7 @@ class ReactExoplayerView extends FrameLayout implements
+     // Props from React
+     private int backBufferDurationMs = DefaultLoadControl.DEFAULT_BACK_BUFFER_DURATION_MS;
+     private Uri srcUri;
++    private String keySetId;
+     private long startTimeMs = -1;
+     private long endTimeMs = -1;
+     private String extension;
+@@ -564,7 +584,7 @@ class ReactExoplayerView extends FrameLayout implements
+                             public void run() {
+                                 // DRM initialization must run on a different thread
+                                 DrmSessionManager drmSessionManager = initializePlayerDrm(self);
+-                                if (drmSessionManager == null && self.drmUUID != null) {
++                                if (drmSessionManager == null && self.drmUUID != null && false) {
+                                     // Failed to intialize DRM session manager - cannot continue
+                                     Log.e("ExoPlayer Exception", "Failed to initialize DRM Session Manager Framework!");
+                                     eventEmitter.error("Failed to initialize DRM Session Manager Framework!", new Exception("DRM Session Manager Framework failure!"), "3003");
+@@ -768,6 +788,12 @@ class ReactExoplayerView extends FrameLayout implements
+             return null;
+         }
+     }
++    public static boolean isOnline(Context context) {
++        ConnectivityManager connectivityManager =
++                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
++        NetworkInfo netInfo = connectivityManager.getActiveNetworkInfo();
++        return (netInfo != null && netInfo.isConnected());
++    }
+ 
+     private MediaSource buildMediaSource(Uri uri, String overrideExtension, DrmSessionManager drmSessionManager, long startTimeMs, long endTimeMs) {
+         if (uri == null) {
+@@ -795,7 +821,24 @@ class ReactExoplayerView extends FrameLayout implements
+                     return drmSessionManager;
+                 }
+             };
+-        } else {
++        } else if (!isOnline(getContext())){ // offline
++            MediaItem.Builder builder = mediaItem.buildUpon();
++            builder
++                    .setMediaId(String.valueOf(srcUri))
++                    .setUri(srcUri)
++                    .setCustomCacheKey(null)
++                    .setMimeType("application/dash+xml");
++            String extrasKeySuffix ="";
++            mediaItem =  builder.setDrmConfiguration(
++                    new MediaItem.DrmConfiguration.Builder(drmUUID)
++                            .setLicenseUri(DRM_LICENSE_URI_EXTRA + extrasKeySuffix)
++                            .setMultiSession(false)
++                            .setForceDefaultLicenseUri(false)
++                            .setForceSessionsForAudioAndVideoTracks(false)
++                            .setKeySetId(keySetId.getBytes())
++                            .build()).build();
++            drmProvider = new DefaultDrmSessionManagerProvider();
++        }else {
+             drmProvider = new DefaultDrmSessionManagerProvider();
+         }
+         switch (type) {
+@@ -1491,7 +1534,7 @@ class ReactExoplayerView extends FrameLayout implements
+ 
+     // ReactExoplayerViewManager public api
+ 
+-    public void setSrc(final Uri uri, final long startTimeMs, final long endTimeMs, final String extension, Map<String, String> headers) {
++    public void setSrc(final Uri uri, final long startTimeMs, final long endTimeMs, final String extension, Map<String, String> headers, String keySetId) {
+         if (uri != null) {
+             boolean isSourceEqual = uri.equals(srcUri) && startTimeMs == this.startTimeMs && endTimeMs == this.endTimeMs;
+             hasDrmFailed = false;
+@@ -1503,6 +1546,7 @@ class ReactExoplayerView extends FrameLayout implements
+             this.mediaDataSourceFactory =
+                     DataSourceUtil.getDefaultDataSourceFactory(this.themedReactContext, bandwidthMeter,
+                             this.requestHeaders);
++            this.keySetId= keySetId;
+ 
+             if (!isSourceEqual) {
+                 reloadSource();
+@@ -2047,4 +2091,5 @@ class ReactExoplayerView extends FrameLayout implements
+     public void onAdEvent(AdEvent adEvent) {
+         eventEmitter.receiveAdEvent(adEvent.getType().name());
+     }
++
+ }
+diff --git a/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ReactExoplayerViewManager.java b/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ReactExoplayerViewManager.java
+index ed810ca..d89dda5 100644
+--- a/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ReactExoplayerViewManager.java
++++ b/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ReactExoplayerViewManager.java
+@@ -5,6 +5,8 @@ import android.content.Context;
+ import android.net.Uri;
+ import android.text.TextUtils;
+ 
++import com.brentvatne.common.DemoUtil;
++//import com.brentvatne.common.DownloadTracker;
+ import com.facebook.react.bridge.Dynamic;
+ import com.facebook.react.bridge.ReadableArray;
+ import com.facebook.react.bridge.ReadableMap;
+@@ -13,6 +15,13 @@ import com.facebook.react.common.MapBuilder;
+ import com.facebook.react.uimanager.ThemedReactContext;
+ import com.facebook.react.uimanager.ViewGroupManager;
+ import com.facebook.react.uimanager.annotations.ReactProp;
++import com.google.android.exoplayer2.Format;
++import com.google.android.exoplayer2.drm.DrmSessionEventListener;
++import com.google.android.exoplayer2.drm.OfflineLicenseHelper;
++import com.google.android.exoplayer2.offline.Download;
++import com.google.android.exoplayer2.source.dash.DashUtil;
++import com.google.android.exoplayer2.source.dash.manifest.DashManifest;
++import com.google.android.exoplayer2.upstream.DataSource;
+ import com.google.android.exoplayer2.util.Util;
+ import com.google.android.exoplayer2.DefaultLoadControl;
+ import com.google.android.exoplayer2.upstream.RawResourceDataSource;
+@@ -82,6 +91,7 @@ public class ReactExoplayerViewManager extends ViewGroupManager<ReactExoplayerVi
+     private static final String PROP_CONTROLS = "controls";
+     private static final String PROP_SUBTITLE_STYLE = "subtitleStyle";
+     private static final String PROP_SHUTTER_COLOR = "shutterColor";
++    private static final String PROP_SRC_KEY_SET_ID = "keySetId";
+ 
+     private ReactExoplayerConfig config;
+ 
+@@ -152,6 +162,8 @@ public class ReactExoplayerViewManager extends ViewGroupManager<ReactExoplayerVi
+     public void setSrc(final ReactExoplayerView videoView, @Nullable ReadableMap src) {
+         Context context = videoView.getContext().getApplicationContext();
+         String uriString = src.hasKey(PROP_SRC_URI) ? src.getString(PROP_SRC_URI) : null;
++        String keySetId = src.hasKey(PROP_SRC_KEY_SET_ID) ? src.getString(PROP_SRC_KEY_SET_ID) : null;
++
+         int startTimeMs = src.hasKey(PROP_SRC_START_TIME) ? src.getInt(PROP_SRC_START_TIME) : -1;
+         int endTimeMs = src.hasKey(PROP_SRC_END_TIME) ? src.getInt(PROP_SRC_END_TIME) : -1;
+         String extension = src.hasKey(PROP_SRC_TYPE) ? src.getString(PROP_SRC_TYPE) : null;
+@@ -166,7 +178,7 @@ public class ReactExoplayerViewManager extends ViewGroupManager<ReactExoplayerVi
+             Uri srcUri = Uri.parse(uriString);
+ 
+             if (srcUri != null) {
+-                videoView.setSrc(srcUri, startTimeMs, endTimeMs, extension, headers);
++                videoView.setSrc(srcUri, startTimeMs, endTimeMs, extension, headers, keySetId);
+             }
+         } else {
+             int identifier = context.getResources().getIdentifier(
+@@ -451,4 +463,5 @@ public class ReactExoplayerViewManager extends ViewGroupManager<ReactExoplayerVi
+ 
+         return result;
+     }
++
+ }
+diff --git a/node_modules/react-native-video/android/src/main/java/com/brentvatne/react/ReactVideoPackage.java b/node_modules/react-native-video/android/src/main/java/com/brentvatne/react/ReactVideoPackage.java
+index 23bedad..28571bb 100644
+--- a/node_modules/react-native-video/android/src/main/java/com/brentvatne/react/ReactVideoPackage.java
++++ b/node_modules/react-native-video/android/src/main/java/com/brentvatne/react/ReactVideoPackage.java
+@@ -43,4 +43,5 @@ public class ReactVideoPackage implements ReactPackage {
+         }
+         return Collections.singletonList(new ReactExoplayerViewManager(config));
+     }
++
+ }
+diff --git a/node_modules/react-native-video/android/src/main/java/com/brentvatne/react/VideoDecoderPropertiesModule.java b/node_modules/react-native-video/android/src/main/java/com/brentvatne/react/VideoDecoderPropertiesModule.java
+index 6622e7f..3e1f250 100644
+--- a/node_modules/react-native-video/android/src/main/java/com/brentvatne/react/VideoDecoderPropertiesModule.java
++++ b/node_modules/react-native-video/android/src/main/java/com/brentvatne/react/VideoDecoderPropertiesModule.java
+@@ -5,16 +5,31 @@ import android.media.MediaCodecList;
+ import android.media.MediaDrm;
+ import android.media.MediaFormat;
+ import android.media.UnsupportedSchemeException;
++import android.net.Uri;
+ import android.os.Build;
++import android.view.MenuItem;
+ 
+ import androidx.annotation.NonNull;
++import androidx.annotation.Nullable;
+ import androidx.annotation.RequiresApi;
+ 
++import com.brentvatne.common.DemoUtil;
++import com.brentvatne.exoplayer.DefaultReactExoplayerConfig;
++import com.brentvatne.exoplayer.ReactExoplayerView;
++import com.brentvatne.exoplayer.ReactExoplayerViewManager;
+ import com.facebook.react.bridge.Promise;
+ import com.facebook.react.bridge.ReactApplicationContext;
+ import com.facebook.react.bridge.ReactContextBaseJavaModule;
+ import com.facebook.react.bridge.ReactMethod;
+-
++import com.google.android.exoplayer2.Format;
++import com.google.android.exoplayer2.RenderersFactory;
++import com.google.android.exoplayer2.drm.DrmSessionEventListener;
++import com.google.android.exoplayer2.drm.OfflineLicenseHelper;
++import com.google.android.exoplayer2.source.dash.DashUtil;
++import com.google.android.exoplayer2.source.dash.manifest.DashManifest;
++import com.google.android.exoplayer2.upstream.DataSource;
++
++import java.io.IOException;
+ import java.util.UUID;
+ 
+ @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
+@@ -104,4 +119,28 @@ public class VideoDecoderPropertiesModule extends ReactContextBaseJavaModule {
+         this.reactContext = reactContext;
+     }
+ 
++        public static String arrayToStringConversion(byte[] inputArray) {
++            StringBuilder output = new StringBuilder();
++            for (int value : inputArray) {
++                output.append((char) value);
++            }
++            return output.toString();
++        }
++    @ReactMethod
++    public void downloadDRM(String manifestUrl, String licenceUrl, Promise p) throws IOException {
++        DataSource.Factory datasourceFactory = DemoUtil.getDataSourceFactory(reactContext);
++        DataSource dataSource = datasourceFactory.createDataSource();
++        DashManifest dashManifest =
++                DashUtil.loadManifest(dataSource, Uri.parse(manifestUrl));
++        Format format = DashUtil.loadFormatWithDrmInitData(dataSource, dashManifest.getPeriod(0));
++        OfflineLicenseHelper offlineLicenseHelper =
++                OfflineLicenseHelper.newWidevineInstance(
++                        licenceUrl,
++                        true,
++                        datasourceFactory,
++                        null,
++                        new DrmSessionEventListener.EventDispatcher());
++        byte[] keySetId = offlineLicenseHelper.downloadLicense(format);
++        p.resolve( arrayToStringConversion(keySetId));
++    }
+ }
+diff --git a/node_modules/react-native-video/android/src/main/res/drawable-hdpi/ic_download.png b/node_modules/react-native-video/android/src/main/res/drawable-hdpi/ic_download.png
+new file mode 100644
+index 0000000..fa3ebbb
+Binary files /dev/null and b/node_modules/react-native-video/android/src/main/res/drawable-hdpi/ic_download.png differ
+diff --git a/node_modules/react-native-video/android/src/main/res/drawable-hdpi/ic_download_done.png b/node_modules/react-native-video/android/src/main/res/drawable-hdpi/ic_download_done.png
+new file mode 100644
+index 0000000..fa0ec9d
+Binary files /dev/null and b/node_modules/react-native-video/android/src/main/res/drawable-hdpi/ic_download_done.png differ
+diff --git a/node_modules/react-native-video/android/src/main/res/drawable-mdpi/ic_download.png b/node_modules/react-native-video/android/src/main/res/drawable-mdpi/ic_download.png
+new file mode 100644
+index 0000000..c8a2039
+Binary files /dev/null and b/node_modules/react-native-video/android/src/main/res/drawable-mdpi/ic_download.png differ
+diff --git a/node_modules/react-native-video/android/src/main/res/drawable-mdpi/ic_download_done.png b/node_modules/react-native-video/android/src/main/res/drawable-mdpi/ic_download_done.png
+new file mode 100644
+index 0000000..08073a2
+Binary files /dev/null and b/node_modules/react-native-video/android/src/main/res/drawable-mdpi/ic_download_done.png differ
+diff --git a/node_modules/react-native-video/android/src/main/res/drawable-xhdpi/ic_banner.png b/node_modules/react-native-video/android/src/main/res/drawable-xhdpi/ic_banner.png
+new file mode 100644
+index 0000000..09de177
+Binary files /dev/null and b/node_modules/react-native-video/android/src/main/res/drawable-xhdpi/ic_banner.png differ
+diff --git a/node_modules/react-native-video/android/src/main/res/drawable-xhdpi/ic_download.png b/node_modules/react-native-video/android/src/main/res/drawable-xhdpi/ic_download.png
+new file mode 100644
+index 0000000..671e0b3
+Binary files /dev/null and b/node_modules/react-native-video/android/src/main/res/drawable-xhdpi/ic_download.png differ
+diff --git a/node_modules/react-native-video/android/src/main/res/drawable-xhdpi/ic_download_done.png b/node_modules/react-native-video/android/src/main/res/drawable-xhdpi/ic_download_done.png
+new file mode 100644
+index 0000000..2339c0b
+Binary files /dev/null and b/node_modules/react-native-video/android/src/main/res/drawable-xhdpi/ic_download_done.png differ
+diff --git a/node_modules/react-native-video/android/src/main/res/drawable-xxhdpi/ic_download.png b/node_modules/react-native-video/android/src/main/res/drawable-xxhdpi/ic_download.png
+new file mode 100644
+index 0000000..4e04a30
+Binary files /dev/null and b/node_modules/react-native-video/android/src/main/res/drawable-xxhdpi/ic_download.png differ
+diff --git a/node_modules/react-native-video/android/src/main/res/drawable-xxhdpi/ic_download_done.png b/node_modules/react-native-video/android/src/main/res/drawable-xxhdpi/ic_download_done.png
+new file mode 100644
+index 0000000..b631a00
+Binary files /dev/null and b/node_modules/react-native-video/android/src/main/res/drawable-xxhdpi/ic_download_done.png differ
+diff --git a/node_modules/react-native-video/android/src/main/res/drawable-xxxhdpi/ic_download.png b/node_modules/react-native-video/android/src/main/res/drawable-xxxhdpi/ic_download.png
+new file mode 100644
+index 0000000..f9bfb5e
+Binary files /dev/null and b/node_modules/react-native-video/android/src/main/res/drawable-xxxhdpi/ic_download.png differ
+diff --git a/node_modules/react-native-video/android/src/main/res/drawable-xxxhdpi/ic_download_done.png b/node_modules/react-native-video/android/src/main/res/drawable-xxxhdpi/ic_download_done.png
+new file mode 100644
+index 0000000..52fe8f6
+Binary files /dev/null and b/node_modules/react-native-video/android/src/main/res/drawable-xxxhdpi/ic_download_done.png differ
+diff --git a/node_modules/react-native-video/android/src/main/res/values/strings.xml b/node_modules/react-native-video/android/src/main/res/values/strings.xml
+index 1f03777..d5924dc 100644
+--- a/node_modules/react-native-video/android/src/main/res/values/strings.xml
++++ b/node_modules/react-native-video/android/src/main/res/values/strings.xml
+@@ -16,4 +16,38 @@
+   <string name="error_drm_unsupported_scheme">This device does not support the required DRM scheme</string>
+ 
+   <string name="error_drm_unknown">An unknown DRM error occurred</string>
++
++
++  <string name="track_selection_title">Select tracks</string>
++
++  <string name="unexpected_intent_action">Unexpected intent action: <xliff:g id="action">%1$s</xliff:g></string>
++
++  <string name="error_cleartext_not_permitted">Cleartext HTTP traffic not permitted. See https://developer.android.com/guide/topics/media/issues/cleartext-not-permitted</string>
++
++  <string name="error_generic">Playback failed</string>
++
++  <string name="error_drm_unsupported_before_api_18">DRM content not supported on API levels below 18</string>
++
++  <string name="error_unsupported_video">Media includes video tracks, but none are playable by this device</string>
++
++  <string name="error_unsupported_audio">Media includes audio tracks, but none are playable by this device</string>
++
++  <string name="storage_permission_denied">Permission to access storage was denied</string>
++
++  <string name="sample_list_load_error">One or more sample lists failed to load</string>
++
++  <string name="post_notification_not_granted">Notifications suppressed. Grant permission to see download notifications.</string>
++
++  <string name="download_start_error">Failed to start download</string>
++
++  <string name="download_start_error_offline_license">Failed to obtain offline license</string>
++
++  <string name="download_playlist_unsupported">This demo app does not support downloading playlists</string>
++
++  <string name="download_scheme_unsupported">This demo app only supports downloading http streams</string>
++
++  <string name="download_live_unsupported">This demo app does not support downloading live content</string>
++
++  <string name="download_ads_unsupported">IMA does not support offline ads</string>
++  <string name="prefer_extension_decoders">Prefer extension decoders</string>
+ </resources>
+diff --git a/node_modules/react-native-video/android/src/main/res/values/styles.xml b/node_modules/react-native-video/android/src/main/res/values/styles.xml
+index 3459d9d..54a572f 100644
+--- a/node_modules/react-native-video/android/src/main/res/values/styles.xml
++++ b/node_modules/react-native-video/android/src/main/res/values/styles.xml
+@@ -1,5 +1,8 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <resources>
++    <style name="TrackSelectionDialogThemeOverlay" parent="ThemeOverlay.AppCompat.Dialog.Alert">
++        <item name="windowNoTitle">false</item>
++    </style>
+     <style name="ExoMediaButton.FullScreen">
+         <item name="android:src">@drawable/exo_icon_fullscreen_enter</item>
+         <item name="android:contentDescription">@string/exo_controls_fullscreen_enter_description</item>

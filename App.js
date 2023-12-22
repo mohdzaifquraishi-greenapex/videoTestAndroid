@@ -1,21 +1,20 @@
-import React, {useMemo, useRef, useState, useEffect} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {
+  NativeModules,
   Platform,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
-  NativeModules,
 } from 'react-native';
 import RNFS from 'react-native-fs';
-import Video, {DRMType} from 'react-native-video';
+import Video from 'react-native-video';
 import {
   drm,
-  fairplayCertificateUrl,
-  getLicenseUrl,
   getWritePermission,
   m3u8_url,
   mpd_url,
+  response,
 } from './src/utils';
 var Buffer = require('buffer/').Buffer;
 const xml2json = require('react-native-xml2js');
@@ -29,16 +28,90 @@ const onError = err => {
 const onLoad = data => {
   console.log('data', data);
 };
-
+const BYTE = 1049;
 export default function App() {
   const videoRef = useRef(null);
   let activeDownloads = {};
   const [len, setLen] = useState(-2);
   const [l, setL] = useState(len);
-  const percentage = useMemo(() => {
-    return parseInt(((l - len) / (l * 0.01)) * 1000);
-  }, [len, l]);
   const [ifAssetExists, setIfAssetExists] = useState(false);
+  const [manifest, setManifest] = useState({});
+  const [bandwidth, setBandwidth] = useState(0);
+  const [Downloaded, setDownloaded] = useState(0);
+  const percentage = useMemo(() => {
+    console.log((Downloaded*100/bandwidth).toFixed(2), bandwidth);
+    return (Downloaded*100/bandwidth).toFixed(2);
+  }, [Downloaded]);
+  const predownload = () => {
+    var requestOptions = {
+      method: 'GET',
+      redirect: 'follow',
+    };
+    fetch(mpd_url, requestOptions)
+      .then(response => response.text())
+      .then(manifest => {
+        let bandwidth = [],
+          template = {},
+          segTime = {},
+          a_template = {},
+          a_segTime = {},
+          a_bandwidth = [],
+          a_label = '';
+        xml2json.parseString(manifest, (a, data) => {
+          // ['AdaptationSet'][0] is audio
+          let a_rep = data.MPD.Period[0].AdaptationSet[0].Representation;
+          a_rep.forEach(d => a_bandwidth.push(d.$.bandwidth));
+          let a_seg = data.MPD.Period[0].AdaptationSet[0].SegmentTemplate;
+          a_template = a_seg[0].$;
+          a_segTime = a_seg[0].SegmentTimeline[0].S.filter(d => d.$.r)[0].$;
+          a_label = data.MPD.Period[0].AdaptationSet[0].Label[0];
+          // ['AdaptationSet'][1] is video
+          let rep = data.MPD.Period[0].AdaptationSet[1].Representation;
+          rep.forEach(d => bandwidth.push(d.$.bandwidth));
+          let seg = data.MPD.Period[0].AdaptationSet[1].SegmentTemplate;
+          template = seg[0].$;
+          segTime = seg[0].SegmentTimeline[0].S.filter(d => d.$.r)[0].$;
+          let local_manifest = manifest
+            .replace(
+              `QualityLevels($Bandwidth$)/Fragments(${a_label}=$Time$,format=mpd-time-csf,encryption=cenc)`,
+              'a_$Time$',
+            )
+            .replace(
+              `QualityLevels($Bandwidth$)/Fragments(${a_label}=i,format=mpd-time-csf,encryption=cenc)`,
+              'a_i',
+            )
+            .replace(
+              'QualityLevels($Bandwidth$)/Fragments(video=$Time$,format=mpd-time-csf,encryption=cenc)',
+              '$Time$',
+            )
+            .replace(
+              'QualityLevels($Bandwidth$)/Fragments(video=i,format=mpd-time-csf,encryption=cenc)',
+              'i',
+            );
+          setLen(a_segTime.r + segTime.r + 2);
+          setL(a_segTime.r + segTime.r + 2);
+          setManifest({
+            asset_id,
+            string_manifest: manifest,
+            local_manifest,
+            audio: {
+              a_bandwidth,
+              a_template,
+              a_segTime,
+              prefix: 'a_',
+            },
+            video: {bandwidth, template, segTime},
+            bandwidth: parseInt(bandwidth[0]) + parseInt(a_bandwidth[0]),
+            bandwidth_text: (
+              (parseInt(bandwidth[0]) + parseInt(a_bandwidth[0])) /
+              (BYTE * BYTE)
+            ).toFixed(2),
+          });
+          setBandwidth(parseInt(bandwidth[0]) + parseInt(a_bandwidth[0]));
+        });
+      })
+      .catch(error => console.log('error', error));
+  };
   useEffect(() => {
     let a = async () => {
       let videocache = RNFS.ExternalCachesDirectoryPath.replace(
@@ -48,11 +121,14 @@ export default function App() {
       setIfAssetExists(await RNFS.exists(videocache));
     };
     a();
-  }, [percentage > 100, percentage == 0]);
+    predownload();
+  }, []);
   const source = useMemo(
     () => ({
       uri: !ifAssetExists
-        ? ( Platform.OS == 'ios' ? m3u8_url :mpd_url)
+        ? Platform.OS == 'ios'
+          ? m3u8_url
+          : mpd_url
         : `${RNFS.ExternalCachesDirectoryPath.replace(
             'cache',
             `files/${asset_id}`,
@@ -63,18 +139,6 @@ export default function App() {
     [percentage == 0, percentage > 100],
   );
 
-  const download = () => {
-    var requestOptions = {
-      method: 'GET',
-      redirect: 'follow',
-    };
-    fetch(mpd_url, requestOptions)
-      .then(response => response.text())
-      .then(result => {
-        _download(result);
-      })
-      .catch(error => console.log('error', error));
-  };
   const downloadDRM = () => {
     NativeModules.VideoDecoderProperties.downloadDRM(
       mpd_url,
@@ -96,54 +160,15 @@ export default function App() {
             console.log('Create videocache err');
           });
       }
-      let bandwidth = [],
-        template = {},
-        segTime = {},
-        a_template = {},
-        a_segTime = {},
-        a_bandwidth = [],
-        a_label = '';
-      xml2json.parseString(manifest, (a, data) => {
-        // ['AdaptationSet'][0] is audio
-        let a_rep = data.MPD.Period[0].AdaptationSet[0].Representation;
-        a_rep.forEach(d => a_bandwidth.push(d.$.bandwidth));
-        let a_seg = data.MPD.Period[0].AdaptationSet[0].SegmentTemplate;
-        a_template = a_seg[0].$;
-        a_segTime = a_seg[0].SegmentTimeline[0].S.filter(d => d.$.r)[0].$;
-        a_label = data.MPD.Period[0].AdaptationSet[0].Label[0];
-        // ['AdaptationSet'][1] is video
-        let rep = data.MPD.Period[0].AdaptationSet[1].Representation;
-        rep.forEach(d => bandwidth.push(d.$.bandwidth));
-        let seg = data.MPD.Period[0].AdaptationSet[1].SegmentTemplate;
-        template = seg[0].$;
-        segTime = seg[0].SegmentTimeline[0].S.filter(d => d.$.r)[0].$;
-        let local_manifest = manifest
-          .replace(
-            `QualityLevels($Bandwidth$)/Fragments(${a_label}=$Time$,format=mpd-time-csf,encryption=cenc)`,
-            'a_$Time$',
-          )
-          .replace(
-            `QualityLevels($Bandwidth$)/Fragments(${a_label}=i,format=mpd-time-csf,encryption=cenc)`,
-            'a_i',
-          )
-          .replace(
-            'QualityLevels($Bandwidth$)/Fragments(video=$Time$,format=mpd-time-csf,encryption=cenc)',
-            '$Time$',
-          )
-          .replace(
-            'QualityLevels($Bandwidth$)/Fragments(video=i,format=mpd-time-csf,encryption=cenc)',
-            'i',
-          );
-        RNFS.writeFile(videocache + '/manifest.mpd', local_manifest, 'utf8'); // download manifest
-        // RNFS.downloadFile({
-        //   fromUrl: "<poster url>",
-        //   toFile: videocache + '/images.png',
-        // }); // download poster
-        setLen(a_segTime.r + segTime.r + 2);
-        setL(a_segTime.r + segTime.r + 2);
-        walk(a_bandwidth, a_template, a_segTime, videocache, 'a_');
-        walk(bandwidth, template, segTime, videocache);
-      });
+      RNFS.writeFile(
+        videocache + '/manifest.mpd',
+        manifest.local_manifest,
+        'utf8',
+      ); // download manifest
+      let {a_bandwidth, a_template, a_segTime} = manifest.audio;
+      let {bandwidth, template, segTime} = manifest.video;
+      walk(a_bandwidth, a_template, a_segTime, videocache, 'a_');
+      walk(bandwidth, template, segTime, videocache);
     } catch (e) {
       console.log(e);
     }
@@ -158,10 +183,11 @@ export default function App() {
         template.media
           .replace('$Bandwidth$', bandwidth[0])
           .replace('$Time$', i == -1 ? 'i' : i * d);
-      var res = downloadVideo(url, dirs);
+      var res = downloadContent(url, dirs);
+      // console.log(res)
     });
   };
-  const downloadVideo = (fromUrl, toFile) => {
+  const downloadContent = (fromUrl, toFile) => {
     activeDownloads[toFile] = new Promise((resolve, reject) => {
       RNFS.downloadFile({
         fromUrl: fromUrl,
@@ -172,10 +198,11 @@ export default function App() {
           // console.log(progress.toFixed(0));
         },
       })
-        .promise.then(res => {
-          console.log('res1', res);
-          res.statusCode == 200 && setLen(l => l - 1);
-        })
+        .promise.then(
+          res =>
+            res.statusCode == 200 &&
+            setDownloaded(Downloaded + parseInt(res.bytesWritten)),
+        )
         .catch(err => {
           console.log('err', err);
         });
@@ -192,7 +219,7 @@ export default function App() {
   return (
     <SafeAreaView style={styles.container}>
       <>
-        <Video
+        {/* <Video
           // Can be a URL or a local file.
           source={source}
           // Store reference
@@ -206,8 +233,10 @@ export default function App() {
           onLoad={onLoad}
           controls
           keySetId={'ksid17DCAD04'}
-        />
-        <TouchableOpacity onPress={download} style={styles.btn}>
+        /> */}
+        <TouchableOpacity
+          onPress={() => _download(manifest)}
+          style={styles.btn}>
           <Text>
             {ifAssetExists
               ? 'Downloaded'
@@ -215,7 +244,8 @@ export default function App() {
               ? 'Downloaded'
               : len < 0
               ? 'Download'
-              : 'Downloading'}
+              : 'Downloading'}{' '}
+            {manifest.bandwidth_text} MB
           </Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={downloadDRM} style={styles.btn}>
